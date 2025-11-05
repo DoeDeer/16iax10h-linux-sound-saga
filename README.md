@@ -108,7 +108,7 @@ I don't know,
 
 ## Offer: I will fund a kernel developer to fix this
 
-Submit a patch that works and I'll donate to your favorite charity. I mean it. I don't know how much. Two hundred dollars? I'm not exactly drowning in money. I can help you test via my hardware.
+Submit a patch that works and I'll donate to your favorite charity. I mean it. I don't know how much. ~~Two hundred dollars?~~ (**Update** [now $400](https://github.com/nadimkobeissi/16iax10h-linux-sound-saga/issues/1)) I'm not exactly drowning in money. I can help you test via my hardware.
 
 ## Are you also having this problem???
 
