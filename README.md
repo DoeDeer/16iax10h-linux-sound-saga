@@ -13,7 +13,7 @@ The following individuals pledge the following amount to the bug bounty, to be p
 - **$500 USD** pledged by @nadimkobeissi (me, organizer of this effort)
 - **$200 USD** [pledged](https://github.com/nadimkobeissi/16iax10h-linux-sound-saga/issues/1) by @Detritalgeo
 - **$100 USD** [pledged](https://github.com/nadimkobeissi/16iax10h-linux-sound-saga/issues/2) by @cerroverb
-- **? USD** [pledged](https://github.com/nadimkobeissi/16iax10h-linux-sound-saga/issues/4) by @atlasfoo
+- **$30 USD** [pledged](https://github.com/nadimkobeissi/16iax10h-linux-sound-saga/issues/4) by @atlasfoo
 
 **Want to add an amount to the pledge? Please send in a pull request!**
 
