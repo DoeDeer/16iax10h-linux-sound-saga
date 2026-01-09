@@ -7,7 +7,8 @@ This guide explains how to get audio working correctly on the Lenovo Legion Pro 
 To our surprise, this fix actually fixed audio on more laptops than just the 16IAX10H! List of confirmed compatible devices:
 
 - Lenovo Legion Pro 7i Gen 10 (**16IAX10H**)
-- Lenovo Legion 5i (**[16IRX9](https://github.com/nadimkobeissi/16iax10h-linux-sound-saga/issues/20)**)
+- Lenovo Legion Pro 7 Gen 10 (**[16AFR10H](https://github.com/nadimkobeissi/16iax10h-linux-sound-saga/issues/30)**)
+- Lenovo Legion 5i Gen 9 (**[16IRX9](https://github.com/nadimkobeissi/16iax10h-linux-sound-saga/issues/20)**)
 
 If your laptop has a similar sound architecture and you're running into similar problems, please try this fix and let us know if it works for you too!
 
@@ -25,7 +26,7 @@ If you prefer to obtain your own copy of this firmware blob, [follow these instr
 
 This patch is tested under the following kernel versions. Click the one you desire to download its corresponding source code:
 
- - [Linux 6.18](https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.18.tar.xz) (also verified to work on 6.18.1 and 6.18.2).
+ - [Linux 6.18](https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.18.tar.xz) (also verified to work on **6.18.1**, **6.18.2** and **6.18.3**.).
 
 ## Step 3: Patch the Linux Kernel Sources
 
@@ -51,7 +52,32 @@ CONFIG_SND_SOC_SOF_INTEL_MTL=m
 CONFIG_SND_SOC_SOF_INTEL_LNL=m
 ```
 
-Configure the rest of the kernel as appropriate for your machine.
+Configure the rest of the kernel as appropriate for your machine. 
+
+<details>
+<summary><h3>Using your existing system kernel configuration (optional)</h3></summary>
+
+Often this configuration can be accomplished simply by dumping your current system kernel config into a `.config` file in the root of your Linux kernel source directory: 
+
+```
+cat /proc/config.gz | gunzip > .config
+```
+
+If configured this way, paste the kernel configuration options above into the end of the `.config`. This can be done manually or with a command:
+
+```
+cat >> .config <<EOF
+CONFIG_SND_HDA_SCODEC_AW88399=m
+CONFIG_SND_HDA_SCODEC_AW88399_I2C=m
+CONFIG_SND_SOC_AW88399=m
+CONFIG_SND_SOC_SOF_INTEL_TOPLEVEL=y
+CONFIG_SND_SOC_SOF_INTEL_COMMON=m
+CONFIG_SND_SOC_SOF_INTEL_MTL=m
+CONFIG_SND_SOC_SOF_INTEL_LNL=m
+EOF
+```
+</details>
+
 
 ## Step 5: Compile and Install the Kernel
 
