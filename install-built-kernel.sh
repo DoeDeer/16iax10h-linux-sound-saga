@@ -69,6 +69,10 @@ echo "  sudo grubby --set-default /boot/vmlinuz-<your-new-kernel-configuration>"
 echo
 echo "Also you may want to reinstall NVIDIA drivers, because there are no nvidia headers for the new kernel."
 echo "  sudo dnf remove -y nvidia-open && sudo dnf install nvidia-open"
+echo "For proper work of the suspend, better run this after driver installation:"
+echo "  sudo systemctl enable nvidia-suspend"
+echo "  sudo systemctl enable nvidia-hibernate"
+echo "  sudo systemctl enable nvidia-resume"
 
 echo
 echo "And finally - re-apply sound settings."

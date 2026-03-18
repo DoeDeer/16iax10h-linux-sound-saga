@@ -126,7 +126,7 @@ EOF
 DOCKER_RUN_ARGS=(
     --rm
     -v "$OUTPUT_DIR:/output"
-    -v "./fix/patches/16iax10h-audio-linux-6.18.patch:/inputs/sound_fix.patch"
+    -v "./fix/patches/16iax10h-audio-linux-6.19.8.patch:/inputs/sound_fix.patch"
     -v "$TMPDIR/entrypoint.sh:/inputs/entrypoint.sh"
 )
 
