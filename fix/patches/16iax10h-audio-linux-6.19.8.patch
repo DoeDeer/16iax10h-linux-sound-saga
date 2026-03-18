@@ -1,7 +1,7 @@
-diff -u -r -N linux-6.19/drivers/acpi/scan.c patched/drivers/acpi/scan.c
---- linux-6.19/drivers/acpi/scan.c
+diff -u -r -N linux-6.19.8/drivers/acpi/scan.c patched/drivers/acpi/scan.c
+--- linux-6.19.8/drivers/acpi/scan.c
 +++ patched/drivers/acpi/scan.c
-@@ -1760,6 +1760,7 @@
+@@ -1761,6 +1761,7 @@
  	 * by the drivers/platform/x86/serial-multi-instantiate.c driver, which
  	 * knows which client device id to use for each resource.
  	 */
@@ -9,13 +9,13 @@ diff -u -r -N linux-6.19/drivers/acpi/scan.c patched/drivers/acpi/scan.c
  		{"BSG1160", },
  		{"BSG2150", },
  		{"CSC3551", },
-diff -u -r -N linux-6.19/drivers/platform/x86/serial-multi-instantiate.c patched/drivers/platform/x86/serial-multi-instantiate.c
---- linux-6.19/drivers/platform/x86/serial-multi-instantiate.c
+diff -u -r -N linux-6.19.8/drivers/platform/x86/serial-multi-instantiate.c patched/drivers/platform/x86/serial-multi-instantiate.c
+--- linux-6.19.8/drivers/platform/x86/serial-multi-instantiate.c
 +++ patched/drivers/platform/x86/serial-multi-instantiate.c
-@@ -399,11 +399,21 @@
+@@ -400,11 +400,21 @@
  	.bus_type = SMI_AUTO_DETECT,
  };
-
+ 
 +static const struct smi_node aw88399_hda = {
 +	.instances = {
 +		{ "aw88399-hda", IRQ_RESOURCE_AUTO, 0 },
@@ -34,13 +34,13 @@ diff -u -r -N linux-6.19/drivers/platform/x86/serial-multi-instantiate.c patched
  	{ "BSG1160", (unsigned long)&bsg1160_data },
  	{ "BSG2150", (unsigned long)&bsg2150_data },
  	{ "CSC3551", (unsigned long)&cs35l41_hda },
-diff -u -r -N linux-6.19/sound/hda/codecs/realtek/alc269.c patched/sound/hda/codecs/realtek/alc269.c
---- linux-6.19/sound/hda/codecs/realtek/alc269.c
+diff -u -r -N linux-6.19.8/sound/hda/codecs/realtek/alc269.c patched/sound/hda/codecs/realtek/alc269.c
+--- linux-6.19.8/sound/hda/codecs/realtek/alc269.c
 +++ patched/sound/hda/codecs/realtek/alc269.c
-@@ -2976,6 +2976,16 @@
+@@ -3210,6 +3210,16 @@
  	comp_generic_fixup(cdc, HDA_FIXUP_ACT_PRE_PROBE, bus, acpi_ids[i].hid, match, count);
  }
-
+ 
 +static void aw88399_fixup_i2c_two(struct hda_codec *cdc, const struct hda_fixup *fix, int action)
 +{
 +	comp_generic_fixup(cdc, action, "i2c", "AWDZ8399", "-%s:00-aw88399-hda.%d", 2);
@@ -54,19 +54,17 @@ diff -u -r -N linux-6.19/sound/hda/codecs/realtek/alc269.c patched/sound/hda/cod
  static void cs35l41_fixup_i2c_two(struct hda_codec *cdc, const struct hda_fixup *fix, int action)
  {
  	comp_generic_fixup(cdc, action, "i2c", "CSC3551", "-%s:00-cs35l41-hda.%d", 2);
-@@ -3816,6 +3826,8 @@
- 	ALC245_FIXUP_HP_TAS2781_I2C_MUTE_LED,
- 	ALC288_FIXUP_SURFACE_SWAP_DACS,
- 	ALC236_FIXUP_HP_MUTE_LED_MICMUTE_GPIO,
+@@ -4057,4 +4067,6 @@
+ 	ALC233_FIXUP_LENOVO_GPIO2_MIC_HOTKEY,
+ 	ALC245_FIXUP_BASS_HP_DAC,
+ 	ALC245_FIXUP_ACER_MICMUTE_LED,
 +	ALC287_FIXUP_AW88399_I2C_2,
 +	ALC287_FIXUP_LENOVO_LEGION_AW88399,
  };
-
- /* A special fixup for Lenovo C940 and Yoga Duet 7;
-@@ -6305,6 +6317,16 @@
- 	[ALC288_FIXUP_SURFACE_SWAP_DACS] = {
- 		.type = HDA_FIXUP_FUNC,
- 		.v.func = alc288_fixup_surface_swap_dacs,
+@@ -6582,6 +6594,16 @@
+ 		.v.func = alc285_fixup_hp_coef_micmute_led,
+ 		.chained = true,
+ 		.chain_id = ALC2XX_FIXUP_HEADSET_MIC,
 +	},
 +	[ALC287_FIXUP_AW88399_I2C_2] = {
 +		.type = HDA_FIXUP_FUNC,
@@ -77,10 +75,10 @@ diff -u -r -N linux-6.19/sound/hda/codecs/realtek/alc269.c patched/sound/hda/cod
 +		.v.func = alc287_fixup_legion_16iax_aw88399,
 +		.chained = true,
 +		.chain_id = ALC287_FIXUP_AW88399_I2C_2,
- 	},
+ 	}
  };
-
-@@ -7287,12 +7309,15 @@
+ 
+@@ -7577,12 +7599,15 @@
  	SND_PCI_QUIRK(0x17aa, 0x38fa, "Thinkbook 16P Gen5", ALC287_FIXUP_MG_RTKC_CSAMP_CS35L41_I2C_THINKPAD),
  	SND_PCI_QUIRK(0x17aa, 0x38fd, "ThinkBook plus Gen5 Hybrid", ALC287_FIXUP_TAS2781_I2C),
  	SND_PCI_QUIRK(0x17aa, 0x3902, "Lenovo E50-80", ALC269_FIXUP_DMIC_THINKPAD_ACPI),
@@ -96,11 +94,11 @@ diff -u -r -N linux-6.19/sound/hda/codecs/realtek/alc269.c patched/sound/hda/cod
  	SND_PCI_QUIRK(0x17aa, 0x3977, "IdeaPad S210", ALC283_FIXUP_INT_MIC),
  	SND_PCI_QUIRK(0x17aa, 0x3978, "Lenovo B50-70", ALC269_FIXUP_DMIC_THINKPAD_ACPI),
  	SND_PCI_QUIRK(0x17aa, 0x3bf8, "Quanta FL1", ALC269_FIXUP_PCM_44K),
-diff -u -r -N linux-6.19/sound/hda/codecs/side-codecs/Kconfig patched/sound/hda/codecs/side-codecs/Kconfig
---- linux-6.19/sound/hda/codecs/side-codecs/Kconfig
+diff -u -r -N linux-6.19.8/sound/hda/codecs/side-codecs/Kconfig patched/sound/hda/codecs/side-codecs/Kconfig
+--- linux-6.19.8/sound/hda/codecs/side-codecs/Kconfig
 +++ patched/sound/hda/codecs/side-codecs/Kconfig
-@@ -142,3 +142,24 @@
-
+@@ -141,3 +141,24 @@
+ 
  comment "Set to Y if you want auto-loading the side codec driver"
  	depends on SND_HDA=y && SND_HDA_SCODEC_TAS2781_SPI=m
 +
@@ -124,8 +122,8 @@ diff -u -r -N linux-6.19/sound/hda/codecs/side-codecs/Kconfig patched/sound/hda/
 +
 +comment "Set to Y if you want auto-loading the side codec driver"
 +	depends on SND_HDA=y && SND_HDA_SCODEC_AW88399_I2C=m
-diff -u -r -N linux-6.19/sound/hda/codecs/side-codecs/Makefile patched/sound/hda/codecs/side-codecs/Makefile
---- linux-6.19/sound/hda/codecs/side-codecs/Makefile
+diff -u -r -N linux-6.19.8/sound/hda/codecs/side-codecs/Makefile patched/sound/hda/codecs/side-codecs/Makefile
+--- linux-6.19.8/sound/hda/codecs/side-codecs/Makefile
 +++ patched/sound/hda/codecs/side-codecs/Makefile
 @@ -13,6 +13,8 @@
  snd-hda-scodec-tas2781-y :=	tas2781_hda.o
@@ -133,7 +131,7 @@ diff -u -r -N linux-6.19/sound/hda/codecs/side-codecs/Makefile patched/sound/hda
  snd-hda-scodec-tas2781-spi-y :=	tas2781_hda_spi.o
 +snd-hda-scodec-aw88399-y :=	aw88399_hda.o
 +snd-hda-scodec-aw88399-i2c-y :=	aw88399_hda_i2c.o
-
+ 
  obj-$(CONFIG_SND_HDA_CIRRUS_SCODEC) += snd-hda-cirrus-scodec.o
  obj-$(CONFIG_SND_HDA_CIRRUS_SCODEC_KUNIT_TEST) += snd-hda-cirrus-scodec-test.o
 @@ -26,3 +28,5 @@
@@ -142,10 +140,10 @@ diff -u -r -N linux-6.19/sound/hda/codecs/side-codecs/Makefile patched/sound/hda
  obj-$(CONFIG_SND_HDA_SCODEC_TAS2781_SPI) += snd-hda-scodec-tas2781-spi.o
 +obj-$(CONFIG_SND_HDA_SCODEC_AW88399) += snd-hda-scodec-aw88399.o
 +obj-$(CONFIG_SND_HDA_SCODEC_AW88399_I2C) += snd-hda-scodec-aw88399-i2c.o
-diff -u -r -N linux-6.19/sound/hda/codecs/side-codecs/aw88399_hda.c patched/sound/hda/codecs/side-codecs/aw88399_hda.c
---- linux-6.19/sound/hda/codecs/side-codecs/aw88399_hda.c	1970-01-01 02:00:00.000000000 +0200
+diff -u -r -N linux-6.19.8/sound/hda/codecs/side-codecs/aw88399_hda.c patched/sound/hda/codecs/side-codecs/aw88399_hda.c
+--- linux-6.19.8/sound/hda/codecs/side-codecs/aw88399_hda.c	1970-01-01 02:00:00.000000000 +0200
 +++ patched/sound/hda/codecs/side-codecs/aw88399_hda.c
-@@ -0,0 +1,474 @@
+@@ -0,0 +1,475 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +//
 +// aw88399_hda.c -- AW88399 HDA side codec driver
@@ -621,8 +619,8 @@ diff -u -r -N linux-6.19/sound/hda/codecs/side-codecs/aw88399_hda.c patched/soun
 +MODULE_DESCRIPTION("HDA AW88399 driver");
 +MODULE_AUTHOR("Lyapsus");
 +MODULE_LICENSE("GPL");
-diff -u -r -N linux-6.19/sound/hda/codecs/side-codecs/aw88399_hda.h patched/sound/hda/codecs/side-codecs/aw88399_hda.h
---- linux-6.19/sound/hda/codecs/side-codecs/aw88399_hda.h	1970-01-01 02:00:00.000000000 +0200
+diff -u -r -N linux-6.19.8/sound/hda/codecs/side-codecs/aw88399_hda.h patched/sound/hda/codecs/side-codecs/aw88399_hda.h
+--- linux-6.19.8/sound/hda/codecs/side-codecs/aw88399_hda.h	1970-01-01 02:00:00.000000000 +0200
 +++ patched/sound/hda/codecs/side-codecs/aw88399_hda.h
 @@ -0,0 +1,48 @@
 +/* SPDX-License-Identifier: GPL-2.0-only
@@ -673,8 +671,8 @@ diff -u -r -N linux-6.19/sound/hda/codecs/side-codecs/aw88399_hda.h patched/soun
 +extern const struct dev_pm_ops aw88399_hda_pm_ops;
 +
 +#endif /* __AW88399_HDA_H__ */
-diff -u -r -N linux-6.19/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c patched/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c
---- linux-6.19/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c	1970-01-01 02:00:00.000000000 +0200
+diff -u -r -N linux-6.19.8/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c patched/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c
+--- linux-6.19.8/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c	1970-01-01 02:00:00.000000000 +0200
 +++ patched/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c
 @@ -0,0 +1,62 @@
 +// SPDX-License-Identifier: GPL-2.0-only
@@ -739,8 +737,8 @@ diff -u -r -N linux-6.19/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c patched/
 +MODULE_AUTHOR("Lyapsus");
 +MODULE_LICENSE("GPL");
 +MODULE_IMPORT_NS("SND_HDA_SCODEC_AW88399");
-diff -u -r -N linux-6.19/sound/soc/codecs/aw88399.c patched/sound/soc/codecs/aw88399.c
---- linux-6.19/sound/soc/codecs/aw88399.c
+diff -u -r -N linux-6.19.8/sound/soc/codecs/aw88399.c patched/sound/soc/codecs/aw88399.c
+--- linux-6.19.8/sound/soc/codecs/aw88399.c
 +++ patched/sound/soc/codecs/aw88399.c
 @@ -14,6 +14,7 @@
  #include <linux/minmax.h>
@@ -750,43 +748,43 @@ diff -u -r -N linux-6.19/sound/soc/codecs/aw88399.c patched/sound/soc/codecs/aw8
  #include <sound/soc.h>
  #include "aw88399.h"
  #include "aw88395/aw88395_device.h"
-@@ -842,7 +843,7 @@
-
+@@ -841,7 +842,7 @@
+ 
  static int aw_dev_check_sram(struct aw_device *aw_dev)
  {
 -	unsigned int reg_val;
 +	unsigned int reg_val = 0;
-
+ 
  	/* read dsp_rom_check_reg */
  	aw_dev_dsp_read(aw_dev, AW88399_DSP_ROM_CHECK_ADDR, &reg_val, AW_DSP_16_DATA);
 @@ -1145,7 +1146,7 @@
  	mutex_unlock(&aw88399->lock);
  }
-
+ 
 -static void aw88399_start(struct aw88399 *aw88399, bool sync_start)
 +void aw88399_start(struct aw88399 *aw88399, bool sync_start)
  {
  	int ret;
-
+ 
 @@ -1168,6 +1169,7 @@
- 		&aw88399->start_work,
- 		AW88399_START_WORK_DELAY_MS);
+ 			&aw88399->start_work,
+ 			AW88399_START_WORK_DELAY_MS);
  }
 +EXPORT_SYMBOL_GPL(aw88399_start);
-
+ 
  static int aw_dev_check_sysint(struct aw_device *aw_dev)
  {
 @@ -1182,7 +1184,7 @@
  	return 0;
  }
-
+ 
 -static int aw88399_stop(struct aw_device *aw_dev)
 +int aw88399_stop(struct aw_device *aw_dev)
  {
  	struct aw_sec_data_desc *dsp_cfg =
  		&aw_dev->prof_info.prof_desc[aw_dev->prof_cur].sec_desc[AW88395_DATA_TYPE_DSP_CFG];
 @@ -1220,6 +1222,46 @@
-
+ 
  	return 0;
  }
 +EXPORT_SYMBOL_GPL(aw88399_stop);
@@ -829,7 +827,7 @@ diff -u -r -N linux-6.19/sound/soc/codecs/aw88399.c patched/sound/soc/codecs/aw8
 +static const struct snd_soc_dai_ops aw88399_dai_ops = {
 +	.hw_params = aw88399_dai_hw_params,
 +};
-
+ 
  static struct snd_soc_dai_driver aw88399_dai[] = {
  	{
 @@ -1239,6 +1281,7 @@
@@ -839,22 +837,22 @@ diff -u -r -N linux-6.19/sound/soc/codecs/aw88399.c patched/sound/soc/codecs/aw8
 +		.ops = &aw88399_dai_ops,
  	},
  };
-
+ 
 @@ -1907,7 +1950,7 @@
  	return 0;
  }
-
+ 
 -static int aw88399_request_firmware_file(struct aw88399 *aw88399)
 +int aw88399_request_firmware_file(struct aw88399 *aw88399)
  {
  	const struct firmware *cont = NULL;
  	int ret;
 @@ -1948,6 +1991,7 @@
-
+ 
  	return ret;
  }
 +EXPORT_SYMBOL_GPL(aw88399_request_firmware_file);
-
+ 
  static const struct snd_kcontrol_new aw88399_controls[] = {
  	SOC_SINGLE_EXT("PCM Playback Volume", AW88399_SYSCTRL2_REG,
 @@ -1978,9 +2022,11 @@
@@ -870,7 +868,7 @@ diff -u -r -N linux-6.19/sound/soc/codecs/aw88399.c patched/sound/soc/codecs/aw8
  		break;
  	default:
 @@ -1993,13 +2039,13 @@
-
+ 
  static const struct snd_soc_dapm_widget aw88399_dapm_widgets[] = {
  	 /* playback */
 -	SND_SOC_DAPM_AIF_IN_E("AIF_RX", "Speaker_Playback", 0, 0, 0, 0,
@@ -878,20 +876,20 @@ diff -u -r -N linux-6.19/sound/soc/codecs/aw88399.c patched/sound/soc/codecs/aw8
  					aw88399_playback_event,
  					SND_SOC_DAPM_PRE_PMU | SND_SOC_DAPM_POST_PMD),
  	SND_SOC_DAPM_OUTPUT("DAC Output"),
-
+ 
  	/* capture */
 -	SND_SOC_DAPM_AIF_OUT("AIF_TX", "Speaker_Capture", 0, SND_SOC_NOPM, 0, 0),
 +	SND_SOC_DAPM_AIF_OUT("AIF_TX", NULL, 0, SND_SOC_NOPM, 0, 0),
  	SND_SOC_DAPM_INPUT("ADC Input"),
  };
-
+ 
 @@ -2055,13 +2101,27 @@
  static void aw88399_parse_channel_dt(struct aw_device *aw_dev)
  {
  	struct device_node *np = aw_dev->dev->of_node;
  	u32 channel_value;
 +	int ret;
-
+ 
 -	of_property_read_u32(np, "awinic,audio-channel", &channel_value);
 -	aw_dev->channel = channel_value;
 -}
@@ -911,23 +909,23 @@ diff -u -r -N linux-6.19/sound/soc/codecs/aw88399.c patched/sound/soc/codecs/aw8
 +	aw_dev->channel = channel_value;
 +	dev_dbg(aw_dev->dev, "DT channel value: %d\n", channel_value);
 +}
-
+ 
 -static int aw88399_init(struct aw88399 *aw88399, struct i2c_client *i2c, struct regmap *regmap)
 +int aw88399_init(struct aw88399 *aw88399, struct i2c_client *i2c, struct regmap *regmap)
  {
  	struct aw_device *aw_dev;
  	unsigned int chip_id;
-@@ -2102,6 +2162,7 @@
-
+@@ -2103,6 +2163,7 @@
+ 
  	return 0;
  }
 +EXPORT_SYMBOL_GPL(aw88399_init);
-
+ 
  static int aw88399_i2c_probe(struct i2c_client *i2c)
  {
-@@ -2151,8 +2212,13 @@
+@@ -2152,8 +2213,13 @@
  MODULE_DEVICE_TABLE(i2c, aw88399_i2c_id);
-
+ 
  #ifdef CONFIG_ACPI
 +/*
 + * ACPI match removed to prevent binding conflict with HDA side-codec driver.
@@ -940,24 +938,24 @@ diff -u -r -N linux-6.19/sound/soc/codecs/aw88399.c patched/sound/soc/codecs/aw8
  	{ },
  };
  MODULE_DEVICE_TABLE(acpi, aw88399_acpi_match);
-diff -u -r -N linux-6.19/sound/soc/codecs/aw88399.h patched/sound/soc/codecs/aw88399.h
---- linux-6.19/sound/soc/codecs/aw88399.h
+diff -u -r -N linux-6.19.8/sound/soc/codecs/aw88399.h patched/sound/soc/codecs/aw88399.h
+--- linux-6.19.8/sound/soc/codecs/aw88399.h
 +++ patched/sound/soc/codecs/aw88399.h
-@@ -409,18 +409,17 @@
+@@ -415,18 +415,17 @@
  		AW88399_CLKS_STABLE_VALUE | \
  		AW88399_OCDS_OC_VALUE | \
  		AW88399_OTHS_OT_VALUE | \
 -		AW88399_PLLS_LOCKED_VALUE))
 +		AW88399_PLLS_LOCKED_VALUE | \
 +		0x2000))  /* Bit 13 - likely DSPS, ignore for now */
-
+ 
  #define AW88399_BIT_SYSST_NOSWS_CHECK \
 -		(AW88399_BSTS_FINISHED_VALUE | \
 -		AW88399_CLKS_STABLE_VALUE | \
 -		AW88399_PLLS_LOCKED_VALUE)
 +		(AW88399_CLKS_STABLE_VALUE | \
 +		AW88399_PLLS_LOCKED_VALUE)  /* Skip BSTS - boost fails on Legion */
-
+ 
  #define AW88399_BIT_SYSST_SWS_CHECK \
 -		(AW88399_BSTS_FINISHED_VALUE | \
 -		AW88399_CLKS_STABLE_VALUE | \
@@ -965,13 +963,13 @@ diff -u -r -N linux-6.19/sound/soc/codecs/aw88399.h patched/sound/soc/codecs/aw8
  		AW88399_PLLS_LOCKED_VALUE | \
 -		AW88399_SWS_SWITCHING_VALUE)
 +		AW88399_SWS_SWITCHING_VALUE)  /* Skip BSTS - boost fails on Legion */
-
+ 
  #define AW88399_CCO_MUX_START_BIT	(14)
  #define AW88399_CCO_MUX_BITS_LEN	(1)
-@@ -625,4 +624,10 @@
+@@ -626,4 +625,10 @@
  	unsigned int dither_st;
  };
-
+ 
 +int aw88399_init(struct aw88399 *aw88399, struct i2c_client *i2c,
 +		 struct regmap *regmap);
 +int aw88399_request_firmware_file(struct aw88399 *aw88399);

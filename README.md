@@ -35,7 +35,7 @@ If you prefer to obtain your own copy of this firmware blob, [follow these instr
 
 This patch is tested under the following kernel versions. Click the one you desire to download its corresponding source code:
 
- - [Linux 6.19](https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.19.tar.xz)
+ - [Linux 6.19.8](https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.19.8.tar.xz) (also seems to work on **RC versions of 7.0**)
  - [Linux 6.18](https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.18.tar.xz) (also verified to work on **6.18.1**, **6.18.2**, **6.18.3**, **6.18.4**, **6.18.5**).
 
 ## Step 3: Patch the Linux Kernel Sources
