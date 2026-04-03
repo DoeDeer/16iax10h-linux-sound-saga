@@ -59,34 +59,19 @@ dnf install -y "$BUILD_DIR/kernel-$BUILD_TAG.fc43.x86_64.rpm" "$BUILD_DIR/kernel
 
 echo
 echo "Kernel installation complete."
-echo
-echo "You may want now to finish kernel configuration (to use non default sound driver) and change your default boot kernel."
-echo "To update kernel configuration, add 'snd_intel_dspcfg.dsp_driver=3' to the end of options line at /boot/loader/entries/<your-new-kernel-configuration>.conf"
-echo "  sudo nano /boot/loader/entries/<your-new-kernel-configuration>.conf"
-echo "To change the default boot kernel:"
-echo "  sudo grubby --set-default /boot/vmlinuz-<your-new-kernel-configuration>"
-
-echo
-echo "Also you may want to reinstall NVIDIA drivers, because there are no nvidia headers for the new kernel."
-echo "  sudo dnf remove -y nvidia-open && sudo dnf install nvidia-open"
-echo "For proper work of the suspend, better run this after driver installation:"
-echo "  sudo systemctl enable nvidia-suspend"
-echo "  sudo systemctl enable nvidia-hibernate"
-echo "  sudo systemctl enable nvidia-resume"
-
-echo
-echo "And finally - re-apply sound settings."
-echo "  sudo cp -f fix/ucm2/HiFi-analog.conf /usr/share/alsa/ucm2/HDA/HiFi-analog.conf"
-echo "  sudo cp -f fix/ucm2/HiFi-mic.conf /usr/share/alsa/ucm2/HDA/HiFi-mic.conf"
-echo "Calibrate speaker:"
-echo "  alsaucm -c hw:0 reset"
-echo "  alsaucm -c hw:0 reload"
-echo "  systemctl --user restart pipewire pipewire-pulse wireplumber"
-echo "  amixer sset -c 0 Master 100%"
-echo "  amixer sset -c 0 Headphone 100%"
-echo "  amixer sset -c 0 Speaker 100%"
-echo "Replace 'hw:0' and '-c 0' with your actual hw id which can get from 'alsaucm listcards'"
-
-echo
 echo "Installed kernels:"
 rpm -q kernel | sort -V
+
+echo
+read -rp "Install (re-isntall) NVIDIA drivers (open source)? [y/N]: " nd_continue
+if [[ ! "$nd_continue" =~ ^[Yy]$ ]]; then
+    dnf remove -y nvidia-open
+    dnf install -y nvidia-open
+
+    read -rp "Enable NVIDIA suspend/hibernate/resume service? [y/N]: " ns_continue
+    if [[ ! "$ns_continue" =~ ^[Yy]$ ]]; then
+        systemctl enable nvidia-hibernate
+        systemctl enable nvidia-suspend
+        systemctl enable nvidia-resume
+    fi
+fi
