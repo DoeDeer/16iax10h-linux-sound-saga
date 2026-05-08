@@ -55,7 +55,7 @@ fi
 
 echo
 echo "Installing kernel RPMs..."
-dnf install -y "$BUILD_DIR/kernel-$BUILD_TAG.fc43.x86_64.rpm" "$BUILD_DIR/kernel-core-$BUILD_TAG.fc43.x86_64.rpm" "$BUILD_DIR/kernel-modules-core-$BUILD_TAG.fc43.x86_64.rpm" "$BUILD_DIR/kernel-modules-$BUILD_TAG.fc43.x86_64.rpm" "$BUILD_DIR/kernel-modules-extra-$BUILD_TAG.fc43.x86_64.rpm" "$BUILD_DIR/kernel-devel-$BUILD_TAG.fc43.x86_64.rpm"
+dnf install -y "$BUILD_DIR/kernel-$BUILD_TAG.fc44.x86_64.rpm" "$BUILD_DIR/kernel-core-$BUILD_TAG.fc44.x86_64.rpm" "$BUILD_DIR/kernel-modules-core-$BUILD_TAG.fc44.x86_64.rpm" "$BUILD_DIR/kernel-modules-$BUILD_TAG.fc44.x86_64.rpm" "$BUILD_DIR/kernel-modules-extra-$BUILD_TAG.fc44.x86_64.rpm" "$BUILD_DIR/kernel-devel-$BUILD_TAG.fc44.x86_64.rpm"
 
 echo
 echo "Kernel installation complete."
@@ -64,12 +64,12 @@ rpm -q kernel | sort -V
 
 echo
 read -rp "Install (re-isntall) NVIDIA drivers (open source)? [y/N]: " nd_continue
-if [[ ! "$nd_continue" =~ ^[Yy]$ ]]; then
+if [[ "$nd_continue" =~ ^[Yy]$ ]]; then
     dnf remove -y nvidia-open
     dnf install -y nvidia-open
 
     read -rp "Enable NVIDIA suspend/hibernate/resume service? [y/N]: " ns_continue
-    if [[ ! "$ns_continue" =~ ^[Yy]$ ]]; then
+    if [[ "$ns_continue" =~ ^[Yy]$ ]]; then
         systemctl enable nvidia-hibernate
         systemctl enable nvidia-suspend
         systemctl enable nvidia-resume

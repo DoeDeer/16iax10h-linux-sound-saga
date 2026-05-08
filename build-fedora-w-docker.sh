@@ -49,7 +49,7 @@ trap cleanup EXIT
 
 cp ./fix/firmware/aw88399_acf.bin "$TMPDIR/aw88399_acf.bin"
 cat > "$TMPDIR/Dockerfile" <<'EOF'
-FROM fedora:43
+FROM fedora:44
 
 RUN dnf -y install \
         fedpkg qt3-devel libXi-devel gcc-c++ ccache && \
@@ -88,7 +88,8 @@ fedpkg clone -a kernel
 cd kernel
 
 info "Checking out f43 branch"
-git switch f43
+git switch f44
+git reset --hard ff30813
 
 info "Installing build dependencies"
 sudo dnf -y builddep kernel.spec
@@ -125,8 +126,9 @@ EOF
 
 DOCKER_RUN_ARGS=(
     --rm
+    --privileged
     -v "$OUTPUT_DIR:/output"
-    -v "./fix/patches/16iax10h-audio-linux-6.19.8.patch:/inputs/sound_fix.patch"
+    -v "./fix/patches/16iax10h-audio-linux-6.19.14.patch:/inputs/sound_fix.patch"
     -v "$TMPDIR/entrypoint.sh:/inputs/entrypoint.sh"
 )
 
