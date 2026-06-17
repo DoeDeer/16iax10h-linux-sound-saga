@@ -89,7 +89,6 @@ cd kernel
 
 info "Checking out f43 branch"
 git switch f44
-git reset --hard ff30813
 
 info "Installing build dependencies"
 sudo dnf -y builddep kernel.spec
@@ -128,7 +127,7 @@ DOCKER_RUN_ARGS=(
     --rm
     --privileged
     -v "$OUTPUT_DIR:/output"
-    -v "./fix/patches/16iax10h-audio-linux-6.19.14.patch:/inputs/sound_fix.patch"
+    -v "./fix/patches/16iax10h-audio-linux-7.0.12.patch:/inputs/sound_fix.patch"
     -v "$TMPDIR/entrypoint.sh:/inputs/entrypoint.sh"
 )
 

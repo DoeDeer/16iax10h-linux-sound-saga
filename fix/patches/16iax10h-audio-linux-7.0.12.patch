@@ -1,7 +1,13 @@
-diff -rupN linux-6.19.14/drivers/acpi/scan.c linux-6.19.14_patch_series/drivers/acpi/scan.c
---- linux-6.19.14/drivers/acpi/scan.c	2026-04-22 13:30:53.000000000 +0200
-+++ linux-6.19.14_patch_series/drivers/acpi/scan.c	2026-04-25 13:49:22.078476284 +0200
-@@ -1761,6 +1761,7 @@ static bool acpi_device_enumeration_by_p
+# This patch was originally created by Marco Giunta <mgiunta@sissa.it>
+# from: https://github.com/marco-giunta/legion-pro7-gen10-audio
+# License: GNU GPL v2
+# 
+# Original commit: https://github.com/marco-giunta/legion-pro7-gen10-audio/commit/8db35d143b4f7e458793ed3b32f4bce3cad2c352
+
+diff -rupN linux-7.0.12/drivers/acpi/scan.c linux-7.0.12_patch_series/drivers/acpi/scan.c
+--- linux-7.0.12/drivers/acpi/scan.c	2026-06-09 11:32:51.000000000 +0100
++++ linux-7.0.12_patch_series/drivers/acpi/scan.c	2026-06-10 14:15:11.353528728 +0100
+@@ -1750,6 +1750,7 @@ static bool acpi_device_enumeration_by_p
  	 * by the drivers/platform/x86/serial-multi-instantiate.c driver, which
  	 * knows which client device id to use for each resource.
  	 */
@@ -9,9 +15,9 @@ diff -rupN linux-6.19.14/drivers/acpi/scan.c linux-6.19.14_patch_series/drivers/
  		{"BSG1160", },
  		{"BSG2150", },
  		{"CSC3551", },
-diff -rupN linux-6.19.14/drivers/platform/x86/serial-multi-instantiate.c linux-6.19.14_patch_series/drivers/platform/x86/serial-multi-instantiate.c
---- linux-6.19.14/drivers/platform/x86/serial-multi-instantiate.c	2026-04-22 13:30:53.000000000 +0200
-+++ linux-6.19.14_patch_series/drivers/platform/x86/serial-multi-instantiate.c	2026-04-25 13:49:22.079763408 +0200
+diff -rupN linux-7.0.12/drivers/platform/x86/serial-multi-instantiate.c linux-7.0.12_patch_series/drivers/platform/x86/serial-multi-instantiate.c
+--- linux-7.0.12/drivers/platform/x86/serial-multi-instantiate.c	2026-06-09 11:32:51.000000000 +0100
++++ linux-7.0.12_patch_series/drivers/platform/x86/serial-multi-instantiate.c	2026-06-10 14:15:11.356632330 +0100
 @@ -307,6 +307,15 @@ static void smi_remove(struct platform_d
  	smi_devs_unregister(smi);
  }
@@ -36,9 +42,631 @@ diff -rupN linux-6.19.14/drivers/platform/x86/serial-multi-instantiate.c linux-6
  	{ "BSG1160", (unsigned long)&bsg1160_data },
  	{ "BSG2150", (unsigned long)&bsg2150_data },
  	{ "CSC3551", (unsigned long)&cs35l41_hda },
-diff -rupN linux-6.19.14/sound/hda/codecs/realtek/alc269.c linux-6.19.14_patch_series/sound/hda/codecs/realtek/alc269.c
---- linux-6.19.14/sound/hda/codecs/realtek/alc269.c	2026-04-22 13:30:53.000000000 +0200
-+++ linux-6.19.14_patch_series/sound/hda/codecs/realtek/alc269.c	2026-04-25 14:34:10.709838029 +0200
+diff -rupN linux-7.0.12/include/sound/aw88399.h linux-7.0.12_patch_series/include/sound/aw88399.h
+--- linux-7.0.12/include/sound/aw88399.h	1970-01-01 01:00:00.000000000 +0100
++++ linux-7.0.12_patch_series/include/sound/aw88399.h	2026-06-10 14:15:11.357129927 +0100
+@@ -0,0 +1,618 @@
++/* SPDX-License-Identifier: GPL-2.0-only
++ *
++ * linux/sound/aw88399.h --  Platform data for AW88399
++ *
++ * Copyright (c) 2023 AWINIC Technology CO., LTD
++ *
++ * Author: Weidong Wang <wangweidong.a@awinic.com>
++ */
++
++#ifndef __SOUND_AW88399_H
++#define __SOUND_AW88399_H
++
++#include <linux/mutex.h>
++#include <linux/workqueue.h>
++
++/* registers list */
++#define AW88399_ID_REG			(0x00)
++#define AW88399_SYSST_REG		(0x01)
++#define AW88399_SYSINT_REG		(0x02)
++#define AW88399_SYSINTM_REG		(0x03)
++#define AW88399_SYSCTRL_REG		(0x04)
++#define AW88399_SYSCTRL2_REG		(0x05)
++#define AW88399_I2SCTRL1_REG		(0x06)
++#define AW88399_I2SCTRL2_REG		(0x07)
++#define AW88399_I2SCTRL3_REG		(0x08)
++#define AW88399_DACCFG1_REG		(0x09)
++#define AW88399_DACCFG2_REG		(0x0A)
++#define AW88399_DACCFG3_REG		(0x0B)
++#define AW88399_DACCFG4_REG		(0x0C)
++#define AW88399_DACCFG5_REG		(0x0D)
++#define AW88399_DACCFG6_REG		(0x0E)
++#define AW88399_DACCFG7_REG		(0x0F)
++#define AW88399_MPDCFG1_REG		(0x10)
++#define AW88399_MPDCFG2_REG		(0x11)
++#define AW88399_MPDCFG3_REG		(0x12)
++#define AW88399_MPDCFG4_REG		(0x13)
++#define AW88399_PWMCTRL1_REG		(0x14)
++#define AW88399_PWMCTRL2_REG		(0x15)
++#define AW88399_PWMCTRL3_REG		(0x16)
++#define AW88399_I2SCFG1_REG		(0x17)
++#define AW88399_DBGCTRL_REG		(0x18)
++#define AW88399_HAGCST_REG		(0x20)
++#define AW88399_VBAT_REG		(0x21)
++#define AW88399_TEMP_REG		(0x22)
++#define AW88399_PVDD_REG		(0x23)
++#define AW88399_ISNDAT_REG		(0x24)
++#define AW88399_VSNDAT_REG		(0x25)
++#define AW88399_I2SINT_REG		(0x26)
++#define AW88399_I2SCAPCNT_REG		(0x27)
++#define AW88399_ANASTA1_REG		(0x28)
++#define AW88399_ANASTA2_REG		(0x29)
++#define AW88399_ANASTA3_REG		(0x2A)
++#define AW88399_TESTDET_REG		(0x2B)
++#define AW88399_DSMCFG1_REG		(0x30)
++#define AW88399_DSMCFG2_REG		(0x31)
++#define AW88399_DSMCFG3_REG		(0x32)
++#define AW88399_DSMCFG4_REG		(0x33)
++#define AW88399_DSMCFG5_REG		(0x34)
++#define AW88399_DSMCFG6_REG		(0x35)
++#define AW88399_DSMCFG7_REG		(0x36)
++#define AW88399_DSMCFG8_REG		(0x37)
++#define AW88399_TESTIN_REG		(0x38)
++#define AW88399_TESTOUT_REG		(0x39)
++#define AW88399_MEMTEST_REG		(0x3A)
++#define AW88399_VSNCTRL1_REG		(0x3B)
++#define AW88399_ISNCTRL1_REG		(0x3C)
++#define AW88399_ISNCTRL2_REG		(0x3D)
++#define AW88399_DSPMADD_REG		(0x40)
++#define AW88399_DSPMDAT_REG		(0x41)
++#define AW88399_WDT_REG		(0x42)
++#define AW88399_ACR1_REG		(0x43)
++#define AW88399_ACR2_REG		(0x44)
++#define AW88399_ASR1_REG		(0x45)
++#define AW88399_ASR2_REG		(0x46)
++#define AW88399_DSPCFG_REG		(0x47)
++#define AW88399_ASR3_REG		(0x48)
++#define AW88399_ASR4_REG		(0x49)
++#define AW88399_DSPVCALB_REG		(0x4A)
++#define AW88399_CRCCTRL_REG		(0x4B)
++#define AW88399_DSPDBG1_REG		(0x4C)
++#define AW88399_DSPDBG2_REG		(0x4D)
++#define AW88399_DSPDBG3_REG		(0x4E)
++#define AW88399_PLLCTRL1_REG		(0x50)
++#define AW88399_PLLCTRL2_REG		(0x51)
++#define AW88399_PLLCTRL3_REG		(0x52)
++#define AW88399_CDACTRL1_REG		(0x53)
++#define AW88399_CDACTRL2_REG		(0x54)
++#define AW88399_CDACTRL3_REG		(0x55)
++#define AW88399_SADCCTRL1_REG		(0x56)
++#define AW88399_SADCCTRL2_REG		(0x57)
++#define AW88399_BOPCTRL1_REG		(0x58)
++#define AW88399_BOPCTRL2_REG		(0x5A)
++#define AW88399_BOPCTRL3_REG		(0x5B)
++#define AW88399_BOPCTRL4_REG		(0x5C)
++#define AW88399_BOPCTRL5_REG		(0x5D)
++#define AW88399_BOPCTRL6_REG		(0x5E)
++#define AW88399_BOPCTRL7_REG		(0x5F)
++#define AW88399_BSTCTRL1_REG		(0x60)
++#define AW88399_BSTCTRL2_REG		(0x61)
++#define AW88399_BSTCTRL3_REG		(0x62)
++#define AW88399_BSTCTRL4_REG		(0x63)
++#define AW88399_BSTCTRL5_REG		(0x64)
++#define AW88399_BSTCTRL6_REG		(0x65)
++#define AW88399_BSTCTRL7_REG		(0x66)
++#define AW88399_BSTCTRL8_REG		(0x67)
++#define AW88399_BSTCTRL9_REG		(0x68)
++#define AW88399_BSTCTRL10_REG		(0x69)
++#define AW88399_CPCTRL_REG		(0x6A)
++#define AW88399_EFWH_REG		(0x6C)
++#define AW88399_EFWM2_REG		(0x6D)
++#define AW88399_EFWM1_REG		(0x6E)
++#define AW88399_EFWL_REG		(0x6F)
++#define AW88399_TESTCTRL1_REG		(0x70)
++#define AW88399_TESTCTRL2_REG		(0x71)
++#define AW88399_EFCTRL1_REG		(0x72)
++#define AW88399_EFCTRL2_REG		(0x73)
++#define AW88399_EFRH4_REG		(0x74)
++#define AW88399_EFRH3_REG		(0x75)
++#define AW88399_EFRH2_REG		(0x76)
++#define AW88399_EFRH1_REG		(0x77)
++#define AW88399_EFRL4_REG		(0x78)
++#define AW88399_EFRL3_REG		(0x79)
++#define AW88399_EFRL2_REG		(0x7A)
++#define AW88399_EFRL1_REG		(0x7B)
++#define AW88399_TM_REG			(0x7C)
++#define AW88399_TM2_REG		(0x7D)
++
++#define AW88399_REG_MAX		(0x7E)
++#define AW88399_MUTE_VOL		(1023)
++
++#define AW88399_DSP_CFG_ADDR		(0x9B00)
++#define AW88399_DSP_REG_CFG_ADPZ_RA	(0x9B68)
++#define AW88399_DSP_FW_ADDR		(0x8980)
++#define AW88399_DSP_ROM_CHECK_ADDR	(0x1F40)
++#define AW88399_DSP_ROM_CHECK_DATA	(0x4638)
++
++#define AW88399_CALI_RE_HBITS_MASK	(~(0xFFFF0000))
++#define AW88399_CALI_RE_HBITS_SHIFT	(16)
++
++#define AW88399_CALI_RE_LBITS_MASK	(~(0xFFFF))
++#define AW88399_CALI_RE_LBITS_SHIFT	(0)
++
++#define AW88399_I2STXEN_START_BIT	(9)
++#define AW88399_I2STXEN_BITS_LEN	(1)
++#define AW88399_I2STXEN_MASK		\
++	(~(((1<<AW88399_I2STXEN_BITS_LEN)-1) << AW88399_I2STXEN_START_BIT))
++
++#define AW88399_I2STXEN_DISABLE	(0)
++#define AW88399_I2STXEN_DISABLE_VALUE	\
++	(AW88399_I2STXEN_DISABLE << AW88399_I2STXEN_START_BIT)
++
++#define AW88399_I2STXEN_ENABLE		(1)
++#define AW88399_I2STXEN_ENABLE_VALUE	\
++	(AW88399_I2STXEN_ENABLE << AW88399_I2STXEN_START_BIT)
++
++#define AW88399_VOL_START_BIT		(0)
++#define AW88399_VOL_BITS_LEN		(10)
++#define AW88399_VOL_MASK		\
++	(~(((1<<AW88399_VOL_BITS_LEN)-1) << AW88399_VOL_START_BIT))
++
++#define AW88399_PWDN_START_BIT		(0)
++#define AW88399_PWDN_BITS_LEN		(1)
++#define AW88399_PWDN_MASK		\
++	(~(((1<<AW88399_PWDN_BITS_LEN)-1) << AW88399_PWDN_START_BIT))
++
++#define AW88399_PWDN_POWER_DOWN	(1)
++#define AW88399_PWDN_POWER_DOWN_VALUE	\
++	(AW88399_PWDN_POWER_DOWN << AW88399_PWDN_START_BIT)
++
++#define AW88399_PWDN_WORKING		(0)
++#define AW88399_PWDN_WORKING_VALUE	\
++	(AW88399_PWDN_WORKING << AW88399_PWDN_START_BIT)
++
++#define AW88399_DSPBY_START_BIT	(2)
++#define AW88399_DSPBY_BITS_LEN		(1)
++#define AW88399_DSPBY_MASK		\
++	(~(((1<<AW88399_DSPBY_BITS_LEN)-1) << AW88399_DSPBY_START_BIT))
++
++#define AW88399_DSPBY_WORKING		(0)
++#define AW88399_DSPBY_WORKING_VALUE	\
++	(AW88399_DSPBY_WORKING << AW88399_DSPBY_START_BIT)
++
++#define AW88399_DSPBY_BYPASS		(1)
++#define AW88399_DSPBY_BYPASS_VALUE	\
++	(AW88399_DSPBY_BYPASS << AW88399_DSPBY_START_BIT)
++
++#define AW88399_MEM_CLKSEL_START_BIT	(3)
++#define AW88399_MEM_CLKSEL_BITS_LEN	(1)
++#define AW88399_MEM_CLKSEL_MASK		\
++	(~(((1<<AW88399_MEM_CLKSEL_BITS_LEN)-1) << AW88399_MEM_CLKSEL_START_BIT))
++
++#define AW88399_MEM_CLKSEL_OSCCLK	(0)
++#define AW88399_MEM_CLKSEL_OSCCLK_VALUE	\
++	(AW88399_MEM_CLKSEL_OSCCLK << AW88399_MEM_CLKSEL_START_BIT)
++
++#define AW88399_MEM_CLKSEL_DAPHCLK	(1)
++#define AW88399_MEM_CLKSEL_DAPHCLK_VALUE	\
++	(AW88399_MEM_CLKSEL_DAPHCLK << AW88399_MEM_CLKSEL_START_BIT)
++
++#define AW88399_DITHER_EN_START_BIT	(15)
++#define AW88399_DITHER_EN_BITS_LEN	(1)
++#define AW88399_DITHER_EN_MASK		 \
++	(~(((1<<AW88399_DITHER_EN_BITS_LEN)-1) << AW88399_DITHER_EN_START_BIT))
++
++#define AW88399_DITHER_EN_DISABLE	(0)
++#define AW88399_DITHER_EN_DISABLE_VALUE	\
++	(AW88399_DITHER_EN_DISABLE << AW88399_DITHER_EN_START_BIT)
++
++#define AW88399_DITHER_EN_ENABLE	(1)
++#define AW88399_DITHER_EN_ENABLE_VALUE	\
++	(AW88399_DITHER_EN_ENABLE << AW88399_DITHER_EN_START_BIT)
++
++#define AW88399_HMUTE_START_BIT	(8)
++#define AW88399_HMUTE_BITS_LEN		(1)
++#define AW88399_HMUTE_MASK		\
++	(~(((1<<AW88399_HMUTE_BITS_LEN)-1) << AW88399_HMUTE_START_BIT))
++
++#define AW88399_HMUTE_DISABLE		(0)
++#define AW88399_HMUTE_DISABLE_VALUE	\
++	(AW88399_HMUTE_DISABLE << AW88399_HMUTE_START_BIT)
++
++#define AW88399_HMUTE_ENABLE		(1)
++#define AW88399_HMUTE_ENABLE_VALUE	\
++	(AW88399_HMUTE_ENABLE << AW88399_HMUTE_START_BIT)
++
++#define AW88399_EF_DBMD_START_BIT	(2)
++#define AW88399_EF_DBMD_BITS_LEN	(1)
++#define AW88399_EF_DBMD_MASK		\
++	(~(((1<<AW88399_EF_DBMD_BITS_LEN)-1) << AW88399_EF_DBMD_START_BIT))
++
++#define AW88399_EF_DBMD_OR		(1)
++#define AW88399_EF_DBMD_OR_VALUE	\
++	(AW88399_EF_DBMD_OR << AW88399_EF_DBMD_START_BIT)
++
++#define AW88399_VDSEL_START_BIT	(5)
++#define AW88399_VDSEL_BITS_LEN		(1)
++#define AW88399_VDSEL_MASK		\
++	(~(((1<<AW88399_VDSEL_BITS_LEN)-1) << AW88399_VDSEL_START_BIT))
++
++#define AW88399_EF_ISN_GESLP_H_START_BIT	(0)
++#define AW88399_EF_ISN_GESLP_H_BITS_LEN	(10)
++#define AW88399_EF_ISN_GESLP_H_MASK		\
++	(~(((1<<AW88399_EF_ISN_GESLP_H_BITS_LEN)-1) << AW88399_EF_ISN_GESLP_H_START_BIT))
++
++/* EF_VSN_GESLP_H bit 9:0 (EFRH3 0x75) */
++#define AW88399_EF_VSN_GESLP_H_START_BIT	(0)
++#define AW88399_EF_VSN_GESLP_H_BITS_LEN	(10)
++#define AW88399_EF_VSN_GESLP_H_MASK		\
++	(~(((1<<AW88399_EF_VSN_GESLP_H_BITS_LEN)-1) << AW88399_EF_VSN_GESLP_H_START_BIT))
++
++#define AW88399_EF_ISN_GESLP_L_START_BIT	(0)
++#define AW88399_EF_ISN_GESLP_L_BITS_LEN	(10)
++#define AW88399_EF_ISN_GESLP_L_MASK		\
++	(~(((1<<AW88399_EF_ISN_GESLP_L_BITS_LEN)-1) << AW88399_EF_ISN_GESLP_L_START_BIT))
++
++/* EF_VSN_GESLP_L bit 9:0 (EFRL3 0x79) */
++#define AW88399_EF_VSN_GESLP_L_START_BIT	(0)
++#define AW88399_EF_VSN_GESLP_L_BITS_LEN	(10)
++#define AW88399_EF_VSN_GESLP_L_MASK		\
++	(~(((1<<AW88399_EF_VSN_GESLP_L_BITS_LEN)-1) << AW88399_EF_VSN_GESLP_L_START_BIT))
++
++#define AW88399_INTERNAL_VSN_TRIM_H_START_BIT	(9)
++#define AW88399_INTERNAL_VSN_TRIM_H_BITS_LEN	(6)
++#define AW88399_INTERNAL_VSN_TRIM_H_MASK	\
++	(~(((1<<AW88399_INTERNAL_VSN_TRIM_H_BITS_LEN)-1) << AW88399_INTERNAL_VSN_TRIM_H_START_BIT))
++
++#define AW88399_INTERNAL_VSN_TRIM_L_START_BIT	(9)
++#define AW88399_INTERNAL_VSN_TRIM_L_BITS_LEN	(6)
++#define AW88399_INTERNAL_VSN_TRIM_L_MASK	\
++	(~(((1<<AW88399_INTERNAL_VSN_TRIM_L_BITS_LEN)-1) << AW88399_INTERNAL_VSN_TRIM_L_START_BIT))
++
++#define AW88399_RCV_MODE_START_BIT	(7)
++#define AW88399_RCV_MODE_BITS_LEN	(1)
++#define AW88399_RCV_MODE_MASK		\
++	(~(((1<<AW88399_RCV_MODE_BITS_LEN)-1) << AW88399_RCV_MODE_START_BIT))
++
++#define AW88399_CLKI_START_BIT		(4)
++#define AW88399_NOCLKI_START_BIT	(5)
++#define AW88399_PLLI_START_BIT		(0)
++#define AW88399_PLLI_INT_VALUE		(1)
++#define AW88399_PLLI_INT_INTERRUPT \
++	(AW88399_PLLI_INT_VALUE << AW88399_PLLI_START_BIT)
++
++#define AW88399_CLKI_INT_VALUE		(1)
++#define AW88399_CLKI_INT_INTERRUPT \
++	(AW88399_CLKI_INT_VALUE << AW88399_CLKI_START_BIT)
++
++#define AW88399_NOCLKI_INT_VALUE	(1)
++#define AW88399_NOCLKI_INT_INTERRUPT \
++	(AW88399_NOCLKI_INT_VALUE << AW88399_NOCLKI_START_BIT)
++
++#define AW88399_BIT_SYSINT_CHECK \
++		(AW88399_PLLI_INT_INTERRUPT | \
++		AW88399_CLKI_INT_INTERRUPT | \
++		AW88399_NOCLKI_INT_INTERRUPT)
++
++#define AW88399_CRC_CHECK_START_BIT	(12)
++#define AW88399_CRC_CHECK_BITS_LEN	(3)
++#define AW88399_CRC_CHECK_BITS_MASK	\
++	(~(((1<<AW88399_CRC_CHECK_BITS_LEN)-1) << AW88399_CRC_CHECK_START_BIT))
++
++#define AW88399_RCV_MODE_RECEIVER	(1)
++#define AW88399_RCV_MODE_RECEIVER_VALUE	\
++	(AW88399_RCV_MODE_RECEIVER << AW88399_RCV_MODE_START_BIT)
++
++#define AW88399_AMPPD_START_BIT	(1)
++#define AW88399_AMPPD_BITS_LEN		(1)
++#define AW88399_AMPPD_MASK		\
++	(~(((1<<AW88399_AMPPD_BITS_LEN)-1) << AW88399_AMPPD_START_BIT))
++
++#define AW88399_AMPPD_WORKING		(0)
++#define AW88399_AMPPD_WORKING_VALUE	\
++	(AW88399_AMPPD_WORKING << AW88399_AMPPD_START_BIT)
++
++#define AW88399_AMPPD_POWER_DOWN	(1)
++#define AW88399_AMPPD_POWER_DOWN_VALUE	\
++	(AW88399_AMPPD_POWER_DOWN << AW88399_AMPPD_START_BIT)
++
++#define AW88399_RAM_CG_BYP_START_BIT	(0)
++#define AW88399_RAM_CG_BYP_BITS_LEN	(1)
++#define AW88399_RAM_CG_BYP_MASK		\
++	(~(((1<<AW88399_RAM_CG_BYP_BITS_LEN)-1) << AW88399_RAM_CG_BYP_START_BIT))
++
++#define AW88399_RAM_CG_BYP_WORK	(0)
++#define AW88399_RAM_CG_BYP_WORK_VALUE	\
++	(AW88399_RAM_CG_BYP_WORK << AW88399_RAM_CG_BYP_START_BIT)
++
++#define AW88399_RAM_CG_BYP_BYPASS	(1)
++#define AW88399_RAM_CG_BYP_BYPASS_VALUE	\
++	(AW88399_RAM_CG_BYP_BYPASS << AW88399_RAM_CG_BYP_START_BIT)
++
++#define AW88399_CRC_END_ADDR_START_BIT	(0)
++#define AW88399_CRC_END_ADDR_BITS_LEN	(12)
++#define AW88399_CRC_END_ADDR_MASK	\
++	(~(((1<<AW88399_CRC_END_ADDR_BITS_LEN)-1) << AW88399_CRC_END_ADDR_START_BIT))
++
++#define AW88399_CRC_CODE_EN_START_BIT	(13)
++#define AW88399_CRC_CODE_EN_BITS_LEN	(1)
++#define AW88399_CRC_CODE_EN_MASK	\
++	(~(((1<<AW88399_CRC_CODE_EN_BITS_LEN)-1) << AW88399_CRC_CODE_EN_START_BIT))
++
++#define AW88399_CRC_CODE_EN_DISABLE	(0)
++#define AW88399_CRC_CODE_EN_DISABLE_VALUE	\
++	(AW88399_CRC_CODE_EN_DISABLE << AW88399_CRC_CODE_EN_START_BIT)
++
++#define AW88399_CRC_CODE_EN_ENABLE	(1)
++#define AW88399_CRC_CODE_EN_ENABLE_VALUE	\
++	(AW88399_CRC_CODE_EN_ENABLE << AW88399_CRC_CODE_EN_START_BIT)
++
++#define AW88399_CRC_CFG_EN_START_BIT	(12)
++#define AW88399_CRC_CFG_EN_BITS_LEN	(1)
++#define AW88399_CRC_CFG_EN_MASK		\
++	(~(((1<<AW88399_CRC_CFG_EN_BITS_LEN)-1) << AW88399_CRC_CFG_EN_START_BIT))
++
++#define AW88399_CRC_CFG_EN_DISABLE	(0)
++#define AW88399_CRC_CFG_EN_DISABLE_VALUE	\
++	(AW88399_CRC_CFG_EN_DISABLE << AW88399_CRC_CFG_EN_START_BIT)
++
++#define AW88399_CRC_CFG_EN_ENABLE	(1)
++#define AW88399_CRC_CFG_EN_ENABLE_VALUE	\
++	(AW88399_CRC_CFG_EN_ENABLE << AW88399_CRC_CFG_EN_START_BIT)
++
++#define AW88399_OCDS_START_BIT		(3)
++#define AW88399_OCDS_OC		(1)
++#define AW88399_OCDS_OC_VALUE		\
++	(AW88399_OCDS_OC << AW88399_OCDS_START_BIT)
++
++#define AW88399_NOCLKS_START_BIT	(5)
++#define AW88399_NOCLKS_NO_CLOCK	(1)
++#define AW88399_NOCLKS_NO_CLOCK_VALUE	\
++	(AW88399_NOCLKS_NO_CLOCK << AW88399_NOCLKS_START_BIT)
++
++#define AW88399_SWS_START_BIT		(8)
++#define AW88399_SWS_SWITCHING		(1)
++#define AW88399_SWS_SWITCHING_VALUE	\
++	(AW88399_SWS_SWITCHING << AW88399_SWS_START_BIT)
++
++#define AW88399_BSTS_START_BIT		(9)
++#define AW88399_BSTS_FINISHED		(1)
++#define AW88399_BSTS_FINISHED_VALUE	\
++	(AW88399_BSTS_FINISHED << AW88399_BSTS_START_BIT)
++
++#define AW88399_UVLS_START_BIT		(14)
++#define AW88399_UVLS_NORMAL		(0)
++#define AW88399_UVLS_NORMAL_VALUE	\
++	(AW88399_UVLS_NORMAL << AW88399_UVLS_START_BIT)
++
++#define AW88399_BSTOCS_START_BIT	(11)
++#define AW88399_BSTOCS_OVER_CURRENT	(1)
++#define AW88399_BSTOCS_OVER_CURRENT_VALUE	\
++	(AW88399_BSTOCS_OVER_CURRENT << AW88399_BSTOCS_START_BIT)
++
++#define AW88399_OTHS_START_BIT		(1)
++#define AW88399_OTHS_OT		(1)
++#define AW88399_OTHS_OT_VALUE		\
++	(AW88399_OTHS_OT << AW88399_OTHS_START_BIT)
++
++#define AW88399_PLLS_START_BIT		(0)
++#define AW88399_PLLS_LOCKED		(1)
++#define AW88399_PLLS_LOCKED_VALUE	\
++	(AW88399_PLLS_LOCKED << AW88399_PLLS_START_BIT)
++
++#define AW88399_CLKS_START_BIT		(4)
++#define AW88399_CLKS_STABLE		(1)
++#define AW88399_CLKS_STABLE_VALUE	\
++	(AW88399_CLKS_STABLE << AW88399_CLKS_START_BIT)
++
++#define AW88399_BIT_PLL_CHECK \
++		(AW88399_CLKS_STABLE_VALUE | \
++		AW88399_PLLS_LOCKED_VALUE)
++
++#define AW88399_BIT_SYSST_CHECK_MASK \
++		(~(AW88399_UVLS_NORMAL_VALUE | \
++		AW88399_BSTOCS_OVER_CURRENT_VALUE | \
++		AW88399_BSTS_FINISHED_VALUE | \
++		AW88399_SWS_SWITCHING_VALUE | \
++		AW88399_NOCLKS_NO_CLOCK_VALUE | \
++		AW88399_CLKS_STABLE_VALUE | \
++		AW88399_OCDS_OC_VALUE | \
++		AW88399_OTHS_OT_VALUE | \
++		AW88399_PLLS_LOCKED_VALUE))
++
++#define AW88399_BIT_SYSST_NOSWS_CHECK \
++		(AW88399_BSTS_FINISHED_VALUE | \
++		AW88399_CLKS_STABLE_VALUE | \
++		AW88399_PLLS_LOCKED_VALUE)
++
++#define AW88399_BIT_SYSST_SWS_CHECK \
++		(AW88399_BSTS_FINISHED_VALUE | \
++		AW88399_CLKS_STABLE_VALUE | \
++		AW88399_PLLS_LOCKED_VALUE | \
++		AW88399_SWS_SWITCHING_VALUE)
++
++#define AW88399_CCO_MUX_START_BIT	(14)
++#define AW88399_CCO_MUX_BITS_LEN	(1)
++#define AW88399_CCO_MUX_MASK		\
++	(~(((1<<AW88399_CCO_MUX_BITS_LEN)-1) << AW88399_CCO_MUX_START_BIT))
++
++#define AW88399_CCO_MUX_DIVIDED	(0)
++#define AW88399_CCO_MUX_DIVIDED_VALUE	\
++	(AW88399_CCO_MUX_DIVIDED << AW88399_CCO_MUX_START_BIT)
++
++#define AW88399_CCO_MUX_BYPASS		(1)
++#define AW88399_CCO_MUX_BYPASS_VALUE	\
++	(AW88399_CCO_MUX_BYPASS << AW88399_CCO_MUX_START_BIT)
++
++#define AW88399_NOISE_GATE_EN_START_BIT	(13)
++#define AW88399_NOISE_GATE_EN_BITS_LEN		(1)
++#define AW88399_NOISE_GATE_EN_MASK	\
++	(~(((1<<AW88399_NOISE_GATE_EN_BITS_LEN)-1) << AW88399_NOISE_GATE_EN_START_BIT))
++
++#define AW88399_WDT_CNT_START_BIT	(0)
++#define AW88399_WDT_CNT_BITS_LEN	(8)
++#define AW88399_WDT_CNT_MASK		\
++	(~(((1<<AW88399_WDT_CNT_BITS_LEN)-1) << AW88399_WDT_CNT_START_BIT))
++
++#define AW88399_REABS_START_BIT	(3)
++#define AW88399_REABS_BITS_LEN		(1)
++#define AW88399_REABS_MASK		\
++	(~(((1<<AW88399_REABS_BITS_LEN)-1) << AW88399_REABS_START_BIT))
++
++#define AW88399_DSP_VOL_START_BIT	(8)
++#define AW88399_DSP_VOL_BITS_LEN	(8)
++#define AW88399_DSP_VOL_MASK		\
++	(~(((1<<AW88399_DSP_VOL_BITS_LEN)-1) << AW88399_DSP_VOL_START_BIT))
++
++#define AW883XX_DSP_NG_EN_START	(13)
++#define AW883XX_DSP_NG_EN_LEN		(1)
++#define AW883XX_DSP_NG_EN_MASK		\
++	(~(((1 << AW883XX_DSP_NG_EN_LEN) - 1) << AW883XX_DSP_NG_EN_START))
++#define AW883XX_DSP_NG_EN_DISABLE	(0)
++#define AW883XX_DSP_NG_EN_DISABLE_VALUE	\
++	(AW883XX_DSP_NG_EN_DISABLE << AW883XX_DSP_NG_EN_START)
++
++#define AW88399_VOLUME_STEP_DB			(64)
++#define AW88399_VOL_DEFAULT_VALUE		(0)
++#define AW88399_DSP_ODD_NUM_BIT_TEST		(0x5555)
++#define AW88399_EF_ISN_GESLP_SIGN_MASK		(~(1 << 9))
++#define AW88399_EF_ISN_GESLP_SIGN_NEG		(0xfe00)
++
++#define AW88399_EF_VSN_GESLP_SIGN_MASK		(~(1 << 9))
++#define AW88399_EF_VSN_GESLP_SIGN_NEG		(0xfe00)
++
++#define AW88399_TEM4_SIGN_MASK			(~(1 << 5))
++#define AW88399_TEM4_SIGN_NEG			(0xffc0)
++
++#define AW88399_ICABLK_FACTOR			(1)
++#define AW88399_VCABLK_FACTOR			(1)
++#define AW88399_VCABLK_DAC_FACTOR		(2)
++
++#define AW88399_VCALB_ADJ_FACTOR		(12)
++#define AW88399_VCALB_ACCURACY			(1 << 12)
++
++#define AW88399_ISCAL_FACTOR			(3125)
++#define AW88399_VSCAL_FACTOR			(18875)
++#define AW88399_ISCAL_DAC_FACTOR		(3125)
++#define AW88399_VSCAL_DAC_FACTOR		(12600)
++#define AW88399_CABL_BASE_VALUE		(1000)
++
++#define AW88399_DEV_DEFAULT_CH			(0)
++#define AW88399_DEV_DSP_CHECK_MAX		(5)
++#define AW88399_MAX_RAM_WRITE_BYTE_SIZE	(128)
++#define AW88399_DSP_RE_SHIFT			(12)
++#define AW88399_CALI_RE_MAX			(15000)
++#define AW88399_CALI_RE_MIN			(4000)
++#define AW_FW_ADDR_LEN				(4)
++#define AW88399_DSP_RE_TO_SHOW_RE(re, shift)	(((re) * (1000)) >> (shift))
++#define AW88399_SHOW_RE_TO_DSP_RE(re, shift)	(((re) << shift) / (1000))
++#define AW88399_CRC_CHECK_PASS_VAL		(0x4)
++
++#define AW88399_CRC_CFG_BASE_ADDR		(0xD80)
++#define AW88399_CRC_FW_BASE_ADDR		(0x4C0)
++#define AW88399_ACF_FILE			"aw88399_acf.bin"
++#define AW88399_DEV_SYSST_CHECK_MAX		(10)
++#define AW88399_CHIP_ID			0x2183
++
++#define AW88399_START_RETRIES			(5)
++#define AW88399_START_WORK_DELAY_MS		(0)
++
++enum {
++	AW_EF_AND_CHECK = 0,
++	AW_EF_OR_CHECK,
++};
++
++enum {
++	AW88399_DEV_VDSEL_DAC = 0,
++	AW88399_DEV_VDSEL_VSENSE = 32,
++};
++
++enum {
++	AW88399_DSP_CRC_NA = 0,
++	AW88399_DSP_CRC_OK = 1,
++};
++
++enum {
++	AW88399_DSP_FW_UPDATE_OFF = 0,
++	AW88399_DSP_FW_UPDATE_ON = 1,
++};
++
++enum {
++	AW88399_FORCE_UPDATE_OFF = 0,
++	AW88399_FORCE_UPDATE_ON = 1,
++};
++
++enum {
++	AW88399_1000_US = 1000,
++	AW88399_2000_US = 2000,
++	AW88399_3000_US = 3000,
++	AW88399_4000_US = 4000,
++};
++
++enum AW88399_DEV_STATUS {
++	AW88399_DEV_PW_OFF = 0,
++	AW88399_DEV_PW_ON,
++};
++
++enum AW88399_DEV_FW_STATUS {
++	AW88399_DEV_FW_FAILED = 0,
++	AW88399_DEV_FW_OK,
++};
++
++enum AW88399_DEV_MEMCLK {
++	AW88399_DEV_MEMCLK_OSC = 0,
++	AW88399_DEV_MEMCLK_PLL = 1,
++};
++
++enum AW88399_DEV_DSP_CFG {
++	AW88399_DEV_DSP_WORK = 0,
++	AW88399_DEV_DSP_BYPASS = 1,
++};
++
++enum {
++	AW88399_NOT_RCV_MODE = 0,
++	AW88399_RCV_MODE = 1,
++};
++
++enum {
++	AW88399_SYNC_START = 0,
++	AW88399_ASYNC_START,
++};
++
++struct aw_device;
++struct aw_container;
++struct aw_cali_desc;
++struct gpio_desc;
++struct i2c_client;
++struct regmap;
++
++struct aw88399 {
++	struct aw_device *aw_pa;
++	struct mutex lock;
++	struct gpio_desc *reset_gpio;
++	struct delayed_work start_work;
++	struct regmap *regmap;
++	struct aw_container *aw_cfg;
++
++	unsigned int check_val;
++	unsigned int crc_init_val;
++	unsigned int vcalb_init_val;
++	unsigned int dither_st;
++	bool bsts_unreliable;
++	bool fw_needs_reload;
++};
++
++int aw_dev_check_syspll(struct aw_device *aw_dev);
++void aw_dev_dsp_enable(struct aw_device *aw_dev, bool is_enable);
++int aw_dev_get_dsp_status(struct aw_device *aw_dev);
++int aw_dev_set_volume(struct aw_device *aw_dev, unsigned int value);
++int aw_dev_update_cali_re(struct aw_cali_desc *cali_desc);
++int aw88399_dev_get_prof_name(struct aw_device *aw_dev, int index, char **prof_name);
++void aw88399_dev_mute(struct aw_device *aw_dev, bool is_mute);
++int aw88399_init(struct aw88399 *aw88399, struct i2c_client *i2c, struct regmap *regmap);
++int aw88399_request_firmware_file(struct aw88399 *aw88399);
++void aw88399_start(struct aw88399 *aw88399, bool sync_start);
++void aw88399_startup_work(struct work_struct *work);
++int aw88399_stop(struct aw_device *aw_dev);
++
++#endif /* __SOUND_AW88399_H */
+diff -rupN linux-7.0.12/sound/hda/codecs/realtek/alc269.c linux-7.0.12_patch_series/sound/hda/codecs/realtek/alc269.c
+--- linux-7.0.12/sound/hda/codecs/realtek/alc269.c	2026-06-09 11:32:51.000000000 +0100
++++ linux-7.0.12_patch_series/sound/hda/codecs/realtek/alc269.c	2026-06-10 14:20:55.264007468 +0100
 @@ -3254,6 +3254,34 @@ static void find_cirrus_companion_amps(s
  	comp_generic_fixup(cdc, HDA_FIXUP_ACT_PRE_PROBE, bus, acpi_ids[i].hid, match, count);
  }
@@ -74,19 +702,20 @@ diff -rupN linux-6.19.14/sound/hda/codecs/realtek/alc269.c linux-6.19.14_patch_s
  static void cs35l41_fixup_i2c_two(struct hda_codec *cdc, const struct hda_fixup *fix, int action)
  {
  	comp_generic_fixup(cdc, action, "i2c", "CSC3551", "-%s:00-cs35l41-hda.%d", 2);
-@@ -4123,6 +4151,8 @@ enum {
- 	ALC245_FIXUP_BASS_HP_DAC,
- 	ALC245_FIXUP_ACER_MICMUTE_LED,
+@@ -4133,6 +4161,8 @@ enum {
  	ALC245_FIXUP_CS35L41_I2C_2_MUTE_LED,
+ 	ALC236_FIXUP_HP_DMIC,
+ 	ALC245_FIXUP_HP_ENVY_X360_15_FH0XXX,
 +	ALC287_FIXUP_AW88399_I2C_2,
 +	ALC287_FIXUP_LENOVO_LEGION_AW88399,
  };
  
  /* A special fixup for Lenovo C940 and Yoga Duet 7;
-@@ -6658,6 +6688,16 @@ static const struct hda_fixup alc269_fix
- 		.v.func = alc245_fixup_hp_mute_led_coefbit,
+@@ -6685,7 +6715,17 @@ static const struct hda_fixup alc269_fix
+ 		.v.func = cs35l41_fixup_i2c_two,
  		.chained = true,
- 		.chain_id = ALC287_FIXUP_CS35L41_I2C_2,
+ 		.chain_id = ALC245_FIXUP_HP_X360_MUTE_LEDS
+-	}
 +	},
 +	[ALC287_FIXUP_AW88399_I2C_2] = {
 +		.type = HDA_FIXUP_FUNC,
@@ -97,35 +726,49 @@ diff -rupN linux-6.19.14/sound/hda/codecs/realtek/alc269.c linux-6.19.14_patch_s
 +		.v.func = alc287_fixup_legion_16iax10h_aw88399,
 +		.chained = true,
 +		.chain_id = ALC287_FIXUP_AW88399_I2C_2,
- 	}
++	},
  };
  
-@@ -7670,6 +7710,8 @@ static const struct hda_quirk alc269_fix
+ static const struct hda_quirk alc269_fixup_tbl[] = {
+@@ -7681,6 +7721,8 @@ static const struct hda_quirk alc269_fix
+ 	SND_PCI_QUIRK(0x17aa, 0x38b8, "Yoga S780-14.5 proX AMD YC Dual", ALC287_FIXUP_TAS2781_I2C),
+ 	SND_PCI_QUIRK(0x17aa, 0x38b9, "Yoga S780-14.5 proX AMD LX Dual", ALC287_FIXUP_TAS2781_I2C),
+ 	SND_PCI_QUIRK(0x17aa, 0x38ba, "Yoga S780-14.5 Air AMD quad YC", ALC287_FIXUP_TAS2781_I2C),
++	HDA_CODEC_QUIRK(0x17aa, 0x3927, "Legion R9000P ADR10", ALC287_FIXUP_LENOVO_LEGION_AW88399),
++	HDA_CODEC_QUIRK(0x17aa, 0x3928, "Legion R9000P ADR10", ALC287_FIXUP_LENOVO_LEGION_AW88399), /* these must match before PCI SSID 17aa:38bb below */
+ 	SND_PCI_QUIRK(0x17aa, 0x38bb, "Yoga S780-14.5 Air AMD quad AAC", ALC287_FIXUP_TAS2781_I2C),
+ 	SND_PCI_QUIRK(0x17aa, 0x38be, "Yoga S980-14.5 proX YC Dual", ALC287_FIXUP_TAS2781_I2C),
+ 	SND_PCI_QUIRK(0x17aa, 0x38bf, "Yoga S980-14.5 proX LX Dual", ALC287_FIXUP_TAS2781_I2C),
+@@ -7703,6 +7745,8 @@ static const struct hda_quirk alc269_fix
  	SND_PCI_QUIRK(0x17aa, 0x38fa, "Thinkbook 16P Gen5", ALC287_FIXUP_MG_RTKC_CSAMP_CS35L41_I2C_THINKPAD),
  	SND_PCI_QUIRK(0x17aa, 0x38fd, "ThinkBook plus Gen5 Hybrid", ALC287_FIXUP_TAS2781_I2C),
  	SND_PCI_QUIRK(0x17aa, 0x3902, "Lenovo E50-80", ALC269_FIXUP_DMIC_THINKPAD_ACPI),
-+	SND_PCI_QUIRK(0x17aa, 0x3906, "Legion Pro 7i 16IAX10H", ALC287_FIXUP_LENOVO_LEGION_AW88399),
-+	SND_PCI_QUIRK(0x17aa, 0x3907, "Legion Pro 7i 16IAX10H / Y9000P IAX10", ALC287_FIXUP_LENOVO_LEGION_AW88399),
++	HDA_CODEC_QUIRK(0x17aa, 0x3906, "Legion Pro 7i 16IAX10H / Y9000P IAX10", ALC287_FIXUP_LENOVO_LEGION_AW88399),
++	HDA_CODEC_QUIRK(0x17aa, 0x3907, "Legion Pro 7i 16IAX10H / Y9000P IAX10", ALC287_FIXUP_LENOVO_LEGION_AW88399),
  	SND_PCI_QUIRK(0x17aa, 0x390d, "Lenovo Yoga Pro 7 14ASP10", ALC287_FIXUP_YOGA9_14IAP7_BASS_SPK_PIN),
  	SND_PCI_QUIRK(0x17aa, 0x3911, "Lenovo Yoga Pro 7 14IAH10", ALC287_FIXUP_YOGA9_14IAP7_BASS_SPK_PIN),
  	SND_PCI_QUIRK(0x17aa, 0x3913, "Lenovo 145", ALC236_FIXUP_LENOVO_INV_DMIC),
-@@ -7678,9 +7720,12 @@ static const struct hda_quirk alc269_fix
+@@ -7711,6 +7755,8 @@ static const struct hda_quirk alc269_fix
  	SND_PCI_QUIRK(0x17aa, 0x3920, "Yoga S990-16 pro Quad VECO Quad", ALC287_FIXUP_TXNW2781_I2C),
  	SND_PCI_QUIRK(0x17aa, 0x3929, "Thinkbook 13x Gen 5", ALC287_FIXUP_MG_RTKC_CSAMP_CS35L41_I2C_THINKPAD),
  	SND_PCI_QUIRK(0x17aa, 0x392b, "Thinkbook 13x Gen 5", ALC287_FIXUP_MG_RTKC_CSAMP_CS35L41_I2C_THINKPAD),
-+	SND_PCI_QUIRK(0x17aa, 0x3938, "Legion Pro 7 16AFR10H", ALC287_FIXUP_LENOVO_LEGION_AW88399),
-+	SND_PCI_QUIRK(0x17aa, 0x3939, "Legion Pro 7 16AFR10H", ALC287_FIXUP_LENOVO_LEGION_AW88399),
++	HDA_CODEC_QUIRK(0x17aa, 0x3938, "Legion Pro 7 16AFR10H", ALC287_FIXUP_LENOVO_LEGION_AW88399),
++	HDA_CODEC_QUIRK(0x17aa, 0x3939, "Legion Pro 7 16AFR10H", ALC287_FIXUP_LENOVO_LEGION_AW88399),
  	SND_PCI_QUIRK(0x17aa, 0x3977, "IdeaPad S210", ALC283_FIXUP_INT_MIC),
  	SND_PCI_QUIRK(0x17aa, 0x3978, "Lenovo B50-70", ALC269_FIXUP_DMIC_THINKPAD_ACPI),
  	SND_PCI_QUIRK(0x17aa, 0x3bf8, "Quanta FL1", ALC269_FIXUP_PCM_44K),
-+	SND_PCI_QUIRK(0x17aa, 0x3d6c, "Legion Pro 7i 16IAX10H", ALC287_FIXUP_LENOVO_LEGION_AW88399),
- 	SND_PCI_QUIRK(0x17aa, 0x5013, "Thinkpad", ALC269_FIXUP_LIMIT_INT_MIC_BOOST),
- 	SND_PCI_QUIRK(0x17aa, 0x501a, "Thinkpad", ALC283_FIXUP_INT_MIC),
- 	SND_PCI_QUIRK(0x17aa, 0x501e, "Thinkpad L440", ALC292_FIXUP_TPT440_DOCK),
-diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda.c linux-6.19.14_patch_series/sound/hda/codecs/side-codecs/aw88399_hda.c
---- linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-6.19.14_patch_series/sound/hda/codecs/side-codecs/aw88399_hda.c	2026-04-25 13:49:29.676941924 +0200
-@@ -0,0 +1,485 @@
+@@ -7998,6 +8044,7 @@ static const struct hda_model_fixup alc2
+ 	{.id = ALC236_FIXUP_LENOVO_INV_DMIC, .name = "alc236-fixup-lenovo-inv-mic"},
+ 	{.id = ALC2XX_FIXUP_HEADSET_MIC, .name = "alc2xx-fixup-headset-mic"},
+ 	{.id = ALC245_FIXUP_BASS_HP_DAC, .name = "alc245-fixup-bass-hp-dac"},
++	{.id = ALC287_FIXUP_LENOVO_LEGION_AW88399, .name = "alc287-lenovo-legion-aw88399"},
+ 	{}
+ };
+ #define ALC225_STANDARD_PINS \
+diff -rupN linux-7.0.12/sound/hda/codecs/side-codecs/aw88399_hda.c linux-7.0.12_patch_series/sound/hda/codecs/side-codecs/aw88399_hda.c
+--- linux-7.0.12/sound/hda/codecs/side-codecs/aw88399_hda.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-7.0.12_patch_series/sound/hda/codecs/side-codecs/aw88399_hda.c	2026-06-10 14:15:11.359135642 +0100
+@@ -0,0 +1,482 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +//
 +// aw88399_hda.c -- AW88399 HDA side codec driver
@@ -148,13 +791,7 @@ diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda.c linux-6.19.1
 +#include "../generic.h"
 +#include "aw88399_hda.h"
 +#include "aw88399_hda_property.h"
-+
-+/* Import register definitions and init function from ASoC driver
-+ * and common functions library
-+ */
-+#include "../../soc/codecs/aw88399.h"
 +#include "../../soc/codecs/aw88395/aw88395_device.h"
-+#include "../../soc/codecs/aw88399-lib.h"
 +
 +#define AW88399_HDA_I2C_BASE_ADDR	0x34
 +#define AW88399_HDA_MAX_AMPS		2
@@ -235,7 +872,9 @@ diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda.c linux-6.19.1
 +	comp->adev = aw88399->adev;
 +	comp->acpi_notifications_supported = aw88399->acpi_notify_supported && aw88399->adev;
 +
-+	dev_info(dev, "Bound to HDA codec, channel %d\n", aw88399->channel);
++	dev_info(aw88399->dev,
++		 "AW88399 Bound - channel %d, AWDZ8399 ACPI SSID %s\n",
++		 aw88399->channel, aw88399->acpi_subsystem_id);
 +
 +	return 0;
 +}
@@ -575,6 +1214,9 @@ diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda.c linux-6.19.1
 +	if (aw88399->aw_dev && aw88399->playing)
 +		aw88399_stop(aw88399->aw_dev);
 +
++	if (aw88399->core)
++		aw88399->core->fw_needs_reload = true;
++
 +	ret = pm_runtime_force_suspend(dev);
 +	if (ret)
 +		dev_err(dev, "Runtime force suspend failed: %d\n", ret);
@@ -589,10 +1231,8 @@ diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda.c linux-6.19.1
 +
 +	dev_dbg(dev, "System resume\n");
 +
-+	if (aw88399->aw_dev) {
++	if (aw88399->aw_dev)
 +		aw88399_hda_hw_reset(aw88399);
-+		/* Chip will be fully reinitialized on next playback */
-+	}
 +
 +	ret = pm_runtime_force_resume(dev);
 +	if (ret)
@@ -611,10 +1251,10 @@ diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda.c linux-6.19.1
 +MODULE_AUTHOR("Yakov Till <yakov.till@gmail.com>");
 +MODULE_LICENSE("GPL");
 +MODULE_FIRMWARE("aw88399_acf.bin");
-diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda.h linux-6.19.14_patch_series/sound/hda/codecs/side-codecs/aw88399_hda.h
---- linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda.h	1970-01-01 01:00:00.000000000 +0100
-+++ linux-6.19.14_patch_series/sound/hda/codecs/side-codecs/aw88399_hda.h	2026-04-25 13:49:29.676980717 +0200
-@@ -0,0 +1,50 @@
+diff -rupN linux-7.0.12/sound/hda/codecs/side-codecs/aw88399_hda.h linux-7.0.12_patch_series/sound/hda/codecs/side-codecs/aw88399_hda.h
+--- linux-7.0.12/sound/hda/codecs/side-codecs/aw88399_hda.h	1970-01-01 01:00:00.000000000 +0100
++++ linux-7.0.12_patch_series/sound/hda/codecs/side-codecs/aw88399_hda.h	2026-06-10 14:15:11.359199252 +0100
+@@ -0,0 +1,51 @@
 +/* SPDX-License-Identifier: GPL-2.0-only
 + *
 + * aw88399_hda.h -- AW88399 HDA side codec driver
@@ -629,6 +1269,7 @@ diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda.h linux-6.19.1
 +#include <linux/gpio/consumer.h>
 +#include <linux/device.h>
 +#include <sound/hda_codec.h>
++#include <sound/aw88399.h>
 +
 +struct acpi_device;
 +
@@ -665,9 +1306,9 @@ diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda.h linux-6.19.1
 +extern const struct dev_pm_ops aw88399_hda_pm_ops;
 +
 +#endif /* __AW88399_HDA_H__ */
-diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c linux-6.19.14_patch_series/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c
---- linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-6.19.14_patch_series/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c	2026-04-25 13:49:29.677005684 +0200
+diff -rupN linux-7.0.12/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c linux-7.0.12_patch_series/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c
+--- linux-7.0.12/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-7.0.12_patch_series/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c	2026-06-10 14:15:11.359248645 +0100
 @@ -0,0 +1,62 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +//
@@ -731,10 +1372,10 @@ diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda_i2c.c linux-6.
 +MODULE_AUTHOR("Yakov Till <yakov.till@gmail.com>");
 +MODULE_LICENSE("GPL");
 +MODULE_IMPORT_NS("SND_HDA_SCODEC_AW88399");
-diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda_property.c linux-6.19.14_patch_series/sound/hda/codecs/side-codecs/aw88399_hda_property.c
---- linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda_property.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-6.19.14_patch_series/sound/hda/codecs/side-codecs/aw88399_hda_property.c	2026-04-25 13:50:19.261170015 +0200
-@@ -0,0 +1,79 @@
+diff -rupN linux-7.0.12/sound/hda/codecs/side-codecs/aw88399_hda_property.c linux-7.0.12_patch_series/sound/hda/codecs/side-codecs/aw88399_hda_property.c
+--- linux-7.0.12/sound/hda/codecs/side-codecs/aw88399_hda_property.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-7.0.12_patch_series/sound/hda/codecs/side-codecs/aw88399_hda_property.c	2026-06-10 14:15:11.359295403 +0100
+@@ -0,0 +1,77 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * aw88399_hda_property.c -- AW88399 HDA property driver
@@ -750,14 +1391,14 @@ diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda_property.c lin
 +static int aw88399_swap_channels(struct aw88399_hda *aw88399)
 +{
 +	/*
-+	 * Certain Lenovo Legion devices have their
++	 * Certain Lenovo Legion laptops have their
 +	 * I2C wiring reversed: 0x34 is physically right speaker,
 +	 * 0x35 is left. Swap channels to correct L/R assignment.
 +	 * This is a model-specific hardware wiring issue, not a driver bug.
 +	 */
 +	aw88399->channel = 1 - aw88399->channel;
 +	dev_info(aw88399->dev,
-+		 "AW88399 Channel swap applied: index %d -> channel %d\n",
++		 "AW88399: Channel swap applied: index %d -> channel %d\n",
 +		 aw88399->index, aw88399->channel);
 +	return 0;
 +}
@@ -766,13 +1407,13 @@ diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda_property.c lin
 +{
 +	/*
 +	 * BSTS (boost-finished) status bit does not reliably report on
-+	 * some hardware. On certain Lenovo Legion devices, both amps
++	 * some hardware. On certain Lenovo Legion laptops, both amps
 +	 * report BSTS=0 (boost not finished) during normal playback with
 +	 * active boost mode confirmed (ADPS=1). Skip BSTS in the
 +	 * startup status check to avoid false init failures.
 +	 */
 +	aw88399->bsts_unreliable = true;
-+	dev_info(aw88399->dev, "BSTS status check disabled\n");
++	dev_info(aw88399->dev, "AW88399: BSTS status check disabled\n");
 +	return 0;
 +}
 +
@@ -791,9 +1432,10 @@ diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda_property.c lin
 +static const struct aw88399_prop_model aw88399_prop_model_table[] = {
 +	{ "17AA3906", aw88399_apply_legion_quirks },
 +	{ "17AA3907", aw88399_apply_legion_quirks },
++	{ "17AA3927", aw88399_apply_legion_quirks },
++	{ "17AA3928", aw88399_apply_legion_quirks },
 +	{ "17AA3938", aw88399_apply_legion_quirks },
 +	{ "17AA3939", aw88399_apply_legion_quirks },
-+	{ "17AA3D6C", aw88399_apply_legion_quirks },
 +	{}
 +};
 +
@@ -801,12 +1443,9 @@ diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda_property.c lin
 +{
 +	const struct aw88399_prop_model *model;
 +
-+	dev_info(aw88399->dev, "Looking up properties for SSID %s\n",
-+		 aw88399->acpi_subsystem_id);
-+
 +	for (model = aw88399_prop_model_table; model->ssid; model++) {
 +		if (!strcasecmp(model->ssid, aw88399->acpi_subsystem_id)) {
-+			dev_info(aw88399->dev, "Picked up properties for SSID %s\n",
++			dev_info(aw88399->dev, "Picked up properties for ACPI SSID %s\n",
 +				 aw88399->acpi_subsystem_id);
 +			return model->add_prop(aw88399);
 +		}
@@ -814,9 +1453,9 @@ diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda_property.c lin
 +
 +	return -ENOENT;
 +}
-diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda_property.h linux-6.19.14_patch_series/sound/hda/codecs/side-codecs/aw88399_hda_property.h
---- linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda_property.h	1970-01-01 01:00:00.000000000 +0100
-+++ linux-6.19.14_patch_series/sound/hda/codecs/side-codecs/aw88399_hda_property.h	2026-04-25 13:49:29.677051832 +0200
+diff -rupN linux-7.0.12/sound/hda/codecs/side-codecs/aw88399_hda_property.h linux-7.0.12_patch_series/sound/hda/codecs/side-codecs/aw88399_hda_property.h
+--- linux-7.0.12/sound/hda/codecs/side-codecs/aw88399_hda_property.h	1970-01-01 01:00:00.000000000 +0100
++++ linux-7.0.12_patch_series/sound/hda/codecs/side-codecs/aw88399_hda_property.h	2026-06-10 14:15:11.359349254 +0100
 @@ -0,0 +1,17 @@
 +/* SPDX-License-Identifier: GPL-2.0-only
 + *
@@ -827,17 +1466,17 @@ diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/aw88399_hda_property.h lin
 + * Author: Marco Giunta
 + */
 +
-+#ifndef AW88399_HDA_PROP_H
-+#define AW88399_HDA_PROP_H
++#ifndef __AW88399_HDA_PROP_H__
++#define __AW88399_HDA_PROP_H__
 +
 +#include "aw88399_hda.h"
 +
 +int aw88399_add_properties(struct aw88399_hda *aw88399);
 +
 +#endif /* __AW88399_HDA_PROP_H__ */
-diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/Kconfig linux-6.19.14_patch_series/sound/hda/codecs/side-codecs/Kconfig
---- linux-6.19.14/sound/hda/codecs/side-codecs/Kconfig	2026-04-22 13:30:53.000000000 +0200
-+++ linux-6.19.14_patch_series/sound/hda/codecs/side-codecs/Kconfig	2026-04-25 13:49:29.676812689 +0200
+diff -rupN linux-7.0.12/sound/hda/codecs/side-codecs/Kconfig linux-7.0.12_patch_series/sound/hda/codecs/side-codecs/Kconfig
+--- linux-7.0.12/sound/hda/codecs/side-codecs/Kconfig	2026-06-09 11:32:51.000000000 +0100
++++ linux-7.0.12_patch_series/sound/hda/codecs/side-codecs/Kconfig	2026-06-10 14:15:11.359431609 +0100
 @@ -12,6 +12,27 @@ config SND_HDA_CIRRUS_SCODEC_KUNIT_TEST
  	  Documentation/dev-tools/kunit/.
  	  If in doubt, say "N".
@@ -866,9 +1505,9 @@ diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/Kconfig linux-6.19.14_patc
  config SND_HDA_SCODEC_CS35L41
  	tristate
  	select SND_HDA_GENERIC
-diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/Makefile linux-6.19.14_patch_series/sound/hda/codecs/side-codecs/Makefile
---- linux-6.19.14/sound/hda/codecs/side-codecs/Makefile	2026-04-22 13:30:53.000000000 +0200
-+++ linux-6.19.14_patch_series/sound/hda/codecs/side-codecs/Makefile	2026-04-25 13:49:29.676884785 +0200
+diff -rupN linux-7.0.12/sound/hda/codecs/side-codecs/Makefile linux-7.0.12_patch_series/sound/hda/codecs/side-codecs/Makefile
+--- linux-7.0.12/sound/hda/codecs/side-codecs/Makefile	2026-06-09 11:32:51.000000000 +0100
++++ linux-7.0.12_patch_series/sound/hda/codecs/side-codecs/Makefile	2026-06-10 14:15:11.359664457 +0100
 @@ -3,6 +3,8 @@ subdir-ccflags-y += -I$(src)/../../commo
  
  snd-hda-cirrus-scodec-y :=	cirrus_scodec.o
@@ -887,18 +1526,10 @@ diff -rupN linux-6.19.14/sound/hda/codecs/side-codecs/Makefile linux-6.19.14_pat
  obj-$(CONFIG_SND_HDA_SCODEC_CS35L41) += snd-hda-scodec-cs35l41.o
  obj-$(CONFIG_SND_HDA_SCODEC_CS35L41_I2C) += snd-hda-scodec-cs35l41-i2c.o
  obj-$(CONFIG_SND_HDA_SCODEC_CS35L41_SPI) += snd-hda-scodec-cs35l41-spi.o
-diff -rupN linux-6.19.14/sound/soc/codecs/aw88399.c linux-6.19.14_patch_series/sound/soc/codecs/aw88399.c
---- linux-6.19.14/sound/soc/codecs/aw88399.c	2026-04-22 13:30:53.000000000 +0200
-+++ linux-6.19.14_patch_series/sound/soc/codecs/aw88399.c	2026-04-25 13:48:39.381907233 +0200
-@@ -17,6 +17,7 @@
- #include <sound/soc.h>
- #include "aw88399.h"
- #include "aw88395/aw88395_device.h"
-+#include "aw88399-lib.h"
- 
- static const struct regmap_config aw88399_remap_config = {
- 	.val_bits = 16,
-@@ -26,1201 +27,6 @@ static const struct regmap_config aw8839
+diff -rupN linux-7.0.12/sound/soc/codecs/aw88399.c linux-7.0.12_patch_series/sound/soc/codecs/aw88399.c
+--- linux-7.0.12/sound/soc/codecs/aw88399.c	2026-06-09 11:32:51.000000000 +0100
++++ linux-7.0.12_patch_series/sound/soc/codecs/aw88399.c	2026-06-10 14:15:11.360299743 +0100
+@@ -26,1201 +26,6 @@ static const struct regmap_config aw8839
  	.val_format_endian = REGMAP_ENDIAN_BIG,
  };
  
@@ -2100,7 +2731,7 @@ diff -rupN linux-6.19.14/sound/soc/codecs/aw88399.c linux-6.19.14_patch_series/s
  static struct snd_soc_dai_driver aw88399_dai[] = {
  	{
  		.name = "aw88399-aif",
-@@ -1869,86 +675,6 @@ static int aw88399_calib_set(struct snd_
+@@ -1869,86 +674,6 @@ static int aw88399_calib_set(struct snd_
  	return 0;
  }
  
@@ -2187,7 +2818,7 @@ diff -rupN linux-6.19.14/sound/soc/codecs/aw88399.c linux-6.19.14_patch_series/s
  static const struct snd_kcontrol_new aw88399_controls[] = {
  	SOC_SINGLE_EXT("PCM Playback Volume", AW88399_SYSCTRL2_REG,
  		6, AW88399_MUTE_VOL, 0, aw88399_volume_get,
-@@ -2052,58 +778,6 @@ static void aw88399_hw_reset(struct aw88
+@@ -2052,58 +777,6 @@ static void aw88399_hw_reset(struct aw88
  	}
  }
  
@@ -2246,13 +2877,589 @@ diff -rupN linux-6.19.14/sound/soc/codecs/aw88399.c linux-6.19.14_patch_series/s
  static int aw88399_i2c_probe(struct i2c_client *i2c)
  {
  	struct aw88399 *aw88399;
-diff -rupN linux-6.19.14/sound/soc/codecs/aw88399.h linux-6.19.14_patch_series/sound/soc/codecs/aw88399.h
---- linux-6.19.14/sound/soc/codecs/aw88399.h	2026-04-22 13:30:53.000000000 +0200
-+++ linux-6.19.14_patch_series/sound/soc/codecs/aw88399.h	2026-04-25 13:48:39.382118013 +0200
-@@ -612,18 +612,4 @@ enum {
- 	AW88399_ASYNC_START,
- };
+diff -rupN linux-7.0.12/sound/soc/codecs/aw88399.h linux-7.0.12_patch_series/sound/soc/codecs/aw88399.h
+--- linux-7.0.12/sound/soc/codecs/aw88399.h	2026-06-09 11:32:51.000000000 +0100
++++ linux-7.0.12_patch_series/sound/soc/codecs/aw88399.h	2026-06-10 14:15:11.360528706 +0100
+@@ -10,512 +10,10 @@
+ #ifndef __AW88399_H__
+ #define __AW88399_H__
  
+-/* registers list */
+-#define AW88399_ID_REG			(0x00)
+-#define AW88399_SYSST_REG		(0x01)
+-#define AW88399_SYSINT_REG		(0x02)
+-#define AW88399_SYSINTM_REG		(0x03)
+-#define AW88399_SYSCTRL_REG		(0x04)
+-#define AW88399_SYSCTRL2_REG		(0x05)
+-#define AW88399_I2SCTRL1_REG		(0x06)
+-#define AW88399_I2SCTRL2_REG		(0x07)
+-#define AW88399_I2SCTRL3_REG		(0x08)
+-#define AW88399_DACCFG1_REG		(0x09)
+-#define AW88399_DACCFG2_REG		(0x0A)
+-#define AW88399_DACCFG3_REG		(0x0B)
+-#define AW88399_DACCFG4_REG		(0x0C)
+-#define AW88399_DACCFG5_REG		(0x0D)
+-#define AW88399_DACCFG6_REG		(0x0E)
+-#define AW88399_DACCFG7_REG		(0x0F)
+-#define AW88399_MPDCFG1_REG		(0x10)
+-#define AW88399_MPDCFG2_REG		(0x11)
+-#define AW88399_MPDCFG3_REG		(0x12)
+-#define AW88399_MPDCFG4_REG		(0x13)
+-#define AW88399_PWMCTRL1_REG		(0x14)
+-#define AW88399_PWMCTRL2_REG		(0x15)
+-#define AW88399_PWMCTRL3_REG		(0x16)
+-#define AW88399_I2SCFG1_REG		(0x17)
+-#define AW88399_DBGCTRL_REG		(0x18)
+-#define AW88399_HAGCST_REG		(0x20)
+-#define AW88399_VBAT_REG		(0x21)
+-#define AW88399_TEMP_REG		(0x22)
+-#define AW88399_PVDD_REG		(0x23)
+-#define AW88399_ISNDAT_REG		(0x24)
+-#define AW88399_VSNDAT_REG		(0x25)
+-#define AW88399_I2SINT_REG		(0x26)
+-#define AW88399_I2SCAPCNT_REG		(0x27)
+-#define AW88399_ANASTA1_REG		(0x28)
+-#define AW88399_ANASTA2_REG		(0x29)
+-#define AW88399_ANASTA3_REG		(0x2A)
+-#define AW88399_TESTDET_REG		(0x2B)
+-#define AW88399_DSMCFG1_REG		(0x30)
+-#define AW88399_DSMCFG2_REG		(0x31)
+-#define AW88399_DSMCFG3_REG		(0x32)
+-#define AW88399_DSMCFG4_REG		(0x33)
+-#define AW88399_DSMCFG5_REG		(0x34)
+-#define AW88399_DSMCFG6_REG		(0x35)
+-#define AW88399_DSMCFG7_REG		(0x36)
+-#define AW88399_DSMCFG8_REG		(0x37)
+-#define AW88399_TESTIN_REG		(0x38)
+-#define AW88399_TESTOUT_REG		(0x39)
+-#define AW88399_MEMTEST_REG		(0x3A)
+-#define AW88399_VSNCTRL1_REG		(0x3B)
+-#define AW88399_ISNCTRL1_REG		(0x3C)
+-#define AW88399_ISNCTRL2_REG		(0x3D)
+-#define AW88399_DSPMADD_REG		(0x40)
+-#define AW88399_DSPMDAT_REG		(0x41)
+-#define AW88399_WDT_REG		(0x42)
+-#define AW88399_ACR1_REG		(0x43)
+-#define AW88399_ACR2_REG		(0x44)
+-#define AW88399_ASR1_REG		(0x45)
+-#define AW88399_ASR2_REG		(0x46)
+-#define AW88399_DSPCFG_REG		(0x47)
+-#define AW88399_ASR3_REG		(0x48)
+-#define AW88399_ASR4_REG		(0x49)
+-#define AW88399_DSPVCALB_REG		(0x4A)
+-#define AW88399_CRCCTRL_REG		(0x4B)
+-#define AW88399_DSPDBG1_REG		(0x4C)
+-#define AW88399_DSPDBG2_REG		(0x4D)
+-#define AW88399_DSPDBG3_REG		(0x4E)
+-#define AW88399_PLLCTRL1_REG		(0x50)
+-#define AW88399_PLLCTRL2_REG		(0x51)
+-#define AW88399_PLLCTRL3_REG		(0x52)
+-#define AW88399_CDACTRL1_REG		(0x53)
+-#define AW88399_CDACTRL2_REG		(0x54)
+-#define AW88399_CDACTRL3_REG		(0x55)
+-#define AW88399_SADCCTRL1_REG		(0x56)
+-#define AW88399_SADCCTRL2_REG		(0x57)
+-#define AW88399_BOPCTRL1_REG		(0x58)
+-#define AW88399_BOPCTRL2_REG		(0x5A)
+-#define AW88399_BOPCTRL3_REG		(0x5B)
+-#define AW88399_BOPCTRL4_REG		(0x5C)
+-#define AW88399_BOPCTRL5_REG		(0x5D)
+-#define AW88399_BOPCTRL6_REG		(0x5E)
+-#define AW88399_BOPCTRL7_REG		(0x5F)
+-#define AW88399_BSTCTRL1_REG		(0x60)
+-#define AW88399_BSTCTRL2_REG		(0x61)
+-#define AW88399_BSTCTRL3_REG		(0x62)
+-#define AW88399_BSTCTRL4_REG		(0x63)
+-#define AW88399_BSTCTRL5_REG		(0x64)
+-#define AW88399_BSTCTRL6_REG		(0x65)
+-#define AW88399_BSTCTRL7_REG		(0x66)
+-#define AW88399_BSTCTRL8_REG		(0x67)
+-#define AW88399_BSTCTRL9_REG		(0x68)
+-#define AW88399_BSTCTRL10_REG		(0x69)
+-#define AW88399_CPCTRL_REG		(0x6A)
+-#define AW88399_EFWH_REG		(0x6C)
+-#define AW88399_EFWM2_REG		(0x6D)
+-#define AW88399_EFWM1_REG		(0x6E)
+-#define AW88399_EFWL_REG		(0x6F)
+-#define AW88399_TESTCTRL1_REG		(0x70)
+-#define AW88399_TESTCTRL2_REG		(0x71)
+-#define AW88399_EFCTRL1_REG		(0x72)
+-#define AW88399_EFCTRL2_REG		(0x73)
+-#define AW88399_EFRH4_REG		(0x74)
+-#define AW88399_EFRH3_REG		(0x75)
+-#define AW88399_EFRH2_REG		(0x76)
+-#define AW88399_EFRH1_REG		(0x77)
+-#define AW88399_EFRL4_REG		(0x78)
+-#define AW88399_EFRL3_REG		(0x79)
+-#define AW88399_EFRL2_REG		(0x7A)
+-#define AW88399_EFRL1_REG		(0x7B)
+-#define AW88399_TM_REG			(0x7C)
+-#define AW88399_TM2_REG		(0x7D)
+-
+-#define AW88399_REG_MAX		(0x7E)
+-#define AW88399_MUTE_VOL		(1023)
+-
+-#define AW88399_DSP_CFG_ADDR		(0x9B00)
+-#define AW88399_DSP_REG_CFG_ADPZ_RA	(0x9B68)
+-#define AW88399_DSP_FW_ADDR		(0x8980)
+-#define AW88399_DSP_ROM_CHECK_ADDR	(0x1F40)
+-#define AW88399_DSP_ROM_CHECK_DATA	(0x4638)
+-
+-#define AW88399_CALI_RE_HBITS_MASK	(~(0xFFFF0000))
+-#define AW88399_CALI_RE_HBITS_SHIFT	(16)
+-
+-#define AW88399_CALI_RE_LBITS_MASK	(~(0xFFFF))
+-#define AW88399_CALI_RE_LBITS_SHIFT	(0)
+-
+-#define AW88399_I2STXEN_START_BIT	(9)
+-#define AW88399_I2STXEN_BITS_LEN	(1)
+-#define AW88399_I2STXEN_MASK		\
+-	(~(((1<<AW88399_I2STXEN_BITS_LEN)-1) << AW88399_I2STXEN_START_BIT))
+-
+-#define AW88399_I2STXEN_DISABLE	(0)
+-#define AW88399_I2STXEN_DISABLE_VALUE	\
+-	(AW88399_I2STXEN_DISABLE << AW88399_I2STXEN_START_BIT)
+-
+-#define AW88399_I2STXEN_ENABLE		(1)
+-#define AW88399_I2STXEN_ENABLE_VALUE	\
+-	(AW88399_I2STXEN_ENABLE << AW88399_I2STXEN_START_BIT)
+-
+-#define AW88399_VOL_START_BIT		(0)
+-#define AW88399_VOL_BITS_LEN		(10)
+-#define AW88399_VOL_MASK		\
+-	(~(((1<<AW88399_VOL_BITS_LEN)-1) << AW88399_VOL_START_BIT))
+-
+-#define AW88399_PWDN_START_BIT		(0)
+-#define AW88399_PWDN_BITS_LEN		(1)
+-#define AW88399_PWDN_MASK		\
+-	(~(((1<<AW88399_PWDN_BITS_LEN)-1) << AW88399_PWDN_START_BIT))
+-
+-#define AW88399_PWDN_POWER_DOWN	(1)
+-#define AW88399_PWDN_POWER_DOWN_VALUE	\
+-	(AW88399_PWDN_POWER_DOWN << AW88399_PWDN_START_BIT)
+-
+-#define AW88399_PWDN_WORKING		(0)
+-#define AW88399_PWDN_WORKING_VALUE	\
+-	(AW88399_PWDN_WORKING << AW88399_PWDN_START_BIT)
+-
+-#define AW88399_DSPBY_START_BIT	(2)
+-#define AW88399_DSPBY_BITS_LEN		(1)
+-#define AW88399_DSPBY_MASK		\
+-	(~(((1<<AW88399_DSPBY_BITS_LEN)-1) << AW88399_DSPBY_START_BIT))
+-
+-#define AW88399_DSPBY_WORKING		(0)
+-#define AW88399_DSPBY_WORKING_VALUE	\
+-	(AW88399_DSPBY_WORKING << AW88399_DSPBY_START_BIT)
+-
+-#define AW88399_DSPBY_BYPASS		(1)
+-#define AW88399_DSPBY_BYPASS_VALUE	\
+-	(AW88399_DSPBY_BYPASS << AW88399_DSPBY_START_BIT)
+-
+-#define AW88399_MEM_CLKSEL_START_BIT	(3)
+-#define AW88399_MEM_CLKSEL_BITS_LEN	(1)
+-#define AW88399_MEM_CLKSEL_MASK		\
+-	(~(((1<<AW88399_MEM_CLKSEL_BITS_LEN)-1) << AW88399_MEM_CLKSEL_START_BIT))
+-
+-#define AW88399_MEM_CLKSEL_OSCCLK	(0)
+-#define AW88399_MEM_CLKSEL_OSCCLK_VALUE	\
+-	(AW88399_MEM_CLKSEL_OSCCLK << AW88399_MEM_CLKSEL_START_BIT)
+-
+-#define AW88399_MEM_CLKSEL_DAPHCLK	(1)
+-#define AW88399_MEM_CLKSEL_DAPHCLK_VALUE	\
+-	(AW88399_MEM_CLKSEL_DAPHCLK << AW88399_MEM_CLKSEL_START_BIT)
+-
+-#define AW88399_DITHER_EN_START_BIT	(15)
+-#define AW88399_DITHER_EN_BITS_LEN	(1)
+-#define AW88399_DITHER_EN_MASK		 \
+-	(~(((1<<AW88399_DITHER_EN_BITS_LEN)-1) << AW88399_DITHER_EN_START_BIT))
+-
+-#define AW88399_DITHER_EN_DISABLE	(0)
+-#define AW88399_DITHER_EN_DISABLE_VALUE	\
+-	(AW88399_DITHER_EN_DISABLE << AW88399_DITHER_EN_START_BIT)
+-
+-#define AW88399_DITHER_EN_ENABLE	(1)
+-#define AW88399_DITHER_EN_ENABLE_VALUE	\
+-	(AW88399_DITHER_EN_ENABLE << AW88399_DITHER_EN_START_BIT)
+-
+-#define AW88399_HMUTE_START_BIT	(8)
+-#define AW88399_HMUTE_BITS_LEN		(1)
+-#define AW88399_HMUTE_MASK		\
+-	(~(((1<<AW88399_HMUTE_BITS_LEN)-1) << AW88399_HMUTE_START_BIT))
+-
+-#define AW88399_HMUTE_DISABLE		(0)
+-#define AW88399_HMUTE_DISABLE_VALUE	\
+-	(AW88399_HMUTE_DISABLE << AW88399_HMUTE_START_BIT)
+-
+-#define AW88399_HMUTE_ENABLE		(1)
+-#define AW88399_HMUTE_ENABLE_VALUE	\
+-	(AW88399_HMUTE_ENABLE << AW88399_HMUTE_START_BIT)
+-
+-#define AW88399_EF_DBMD_START_BIT	(2)
+-#define AW88399_EF_DBMD_BITS_LEN	(1)
+-#define AW88399_EF_DBMD_MASK		\
+-	(~(((1<<AW88399_EF_DBMD_BITS_LEN)-1) << AW88399_EF_DBMD_START_BIT))
+-
+-#define AW88399_EF_DBMD_OR		(1)
+-#define AW88399_EF_DBMD_OR_VALUE	\
+-	(AW88399_EF_DBMD_OR << AW88399_EF_DBMD_START_BIT)
+-
+-#define AW88399_VDSEL_START_BIT	(5)
+-#define AW88399_VDSEL_BITS_LEN		(1)
+-#define AW88399_VDSEL_MASK		\
+-	(~(((1<<AW88399_VDSEL_BITS_LEN)-1) << AW88399_VDSEL_START_BIT))
+-
+-#define AW88399_EF_ISN_GESLP_H_START_BIT	(0)
+-#define AW88399_EF_ISN_GESLP_H_BITS_LEN	(10)
+-#define AW88399_EF_ISN_GESLP_H_MASK		\
+-	(~(((1<<AW88399_EF_ISN_GESLP_H_BITS_LEN)-1) << AW88399_EF_ISN_GESLP_H_START_BIT))
+-
+-/* EF_VSN_GESLP_H bit 9:0 (EFRH3 0x75) */
+-#define AW88399_EF_VSN_GESLP_H_START_BIT	(0)
+-#define AW88399_EF_VSN_GESLP_H_BITS_LEN	(10)
+-#define AW88399_EF_VSN_GESLP_H_MASK		\
+-	(~(((1<<AW88399_EF_VSN_GESLP_H_BITS_LEN)-1) << AW88399_EF_VSN_GESLP_H_START_BIT))
+-
+-#define AW88399_EF_ISN_GESLP_L_START_BIT	(0)
+-#define AW88399_EF_ISN_GESLP_L_BITS_LEN	(10)
+-#define AW88399_EF_ISN_GESLP_L_MASK		\
+-	(~(((1<<AW88399_EF_ISN_GESLP_L_BITS_LEN)-1) << AW88399_EF_ISN_GESLP_L_START_BIT))
+-
+-/* EF_VSN_GESLP_L bit 9:0 (EFRL3 0x79) */
+-#define AW88399_EF_VSN_GESLP_L_START_BIT	(0)
+-#define AW88399_EF_VSN_GESLP_L_BITS_LEN	(10)
+-#define AW88399_EF_VSN_GESLP_L_MASK		\
+-	(~(((1<<AW88399_EF_VSN_GESLP_L_BITS_LEN)-1) << AW88399_EF_VSN_GESLP_L_START_BIT))
+-
+-#define AW88399_INTERNAL_VSN_TRIM_H_START_BIT	(9)
+-#define AW88399_INTERNAL_VSN_TRIM_H_BITS_LEN	(6)
+-#define AW88399_INTERNAL_VSN_TRIM_H_MASK	\
+-	(~(((1<<AW88399_INTERNAL_VSN_TRIM_H_BITS_LEN)-1) << AW88399_INTERNAL_VSN_TRIM_H_START_BIT))
+-
+-#define AW88399_INTERNAL_VSN_TRIM_L_START_BIT	(9)
+-#define AW88399_INTERNAL_VSN_TRIM_L_BITS_LEN	(6)
+-#define AW88399_INTERNAL_VSN_TRIM_L_MASK	\
+-	(~(((1<<AW88399_INTERNAL_VSN_TRIM_L_BITS_LEN)-1) << AW88399_INTERNAL_VSN_TRIM_L_START_BIT))
+-
+-#define AW88399_RCV_MODE_START_BIT	(7)
+-#define AW88399_RCV_MODE_BITS_LEN	(1)
+-#define AW88399_RCV_MODE_MASK		\
+-	(~(((1<<AW88399_RCV_MODE_BITS_LEN)-1) << AW88399_RCV_MODE_START_BIT))
+-
+-#define AW88399_CLKI_START_BIT		(4)
+-#define AW88399_NOCLKI_START_BIT	(5)
+-#define AW88399_PLLI_START_BIT		(0)
+-#define AW88399_PLLI_INT_VALUE		(1)
+-#define AW88399_PLLI_INT_INTERRUPT \
+-	(AW88399_PLLI_INT_VALUE << AW88399_PLLI_START_BIT)
+-
+-#define AW88399_CLKI_INT_VALUE		(1)
+-#define AW88399_CLKI_INT_INTERRUPT \
+-	(AW88399_CLKI_INT_VALUE << AW88399_CLKI_START_BIT)
+-
+-#define AW88399_NOCLKI_INT_VALUE	(1)
+-#define AW88399_NOCLKI_INT_INTERRUPT \
+-	(AW88399_NOCLKI_INT_VALUE << AW88399_NOCLKI_START_BIT)
+-
+-#define AW88399_BIT_SYSINT_CHECK \
+-		(AW88399_PLLI_INT_INTERRUPT | \
+-		AW88399_CLKI_INT_INTERRUPT | \
+-		AW88399_NOCLKI_INT_INTERRUPT)
+-
+-#define AW88399_CRC_CHECK_START_BIT	(12)
+-#define AW88399_CRC_CHECK_BITS_LEN	(3)
+-#define AW88399_CRC_CHECK_BITS_MASK	\
+-	(~(((1<<AW88399_CRC_CHECK_BITS_LEN)-1) << AW88399_CRC_CHECK_START_BIT))
+-
+-#define AW88399_RCV_MODE_RECEIVER	(1)
+-#define AW88399_RCV_MODE_RECEIVER_VALUE	\
+-	(AW88399_RCV_MODE_RECEIVER << AW88399_RCV_MODE_START_BIT)
+-
+-#define AW88399_AMPPD_START_BIT	(1)
+-#define AW88399_AMPPD_BITS_LEN		(1)
+-#define AW88399_AMPPD_MASK		\
+-	(~(((1<<AW88399_AMPPD_BITS_LEN)-1) << AW88399_AMPPD_START_BIT))
+-
+-#define AW88399_AMPPD_WORKING		(0)
+-#define AW88399_AMPPD_WORKING_VALUE	\
+-	(AW88399_AMPPD_WORKING << AW88399_AMPPD_START_BIT)
+-
+-#define AW88399_AMPPD_POWER_DOWN	(1)
+-#define AW88399_AMPPD_POWER_DOWN_VALUE	\
+-	(AW88399_AMPPD_POWER_DOWN << AW88399_AMPPD_START_BIT)
+-
+-#define AW88399_RAM_CG_BYP_START_BIT	(0)
+-#define AW88399_RAM_CG_BYP_BITS_LEN	(1)
+-#define AW88399_RAM_CG_BYP_MASK		\
+-	(~(((1<<AW88399_RAM_CG_BYP_BITS_LEN)-1) << AW88399_RAM_CG_BYP_START_BIT))
+-
+-#define AW88399_RAM_CG_BYP_WORK	(0)
+-#define AW88399_RAM_CG_BYP_WORK_VALUE	\
+-	(AW88399_RAM_CG_BYP_WORK << AW88399_RAM_CG_BYP_START_BIT)
+-
+-#define AW88399_RAM_CG_BYP_BYPASS	(1)
+-#define AW88399_RAM_CG_BYP_BYPASS_VALUE	\
+-	(AW88399_RAM_CG_BYP_BYPASS << AW88399_RAM_CG_BYP_START_BIT)
+-
+-#define AW88399_CRC_END_ADDR_START_BIT	(0)
+-#define AW88399_CRC_END_ADDR_BITS_LEN	(12)
+-#define AW88399_CRC_END_ADDR_MASK	\
+-	(~(((1<<AW88399_CRC_END_ADDR_BITS_LEN)-1) << AW88399_CRC_END_ADDR_START_BIT))
+-
+-#define AW88399_CRC_CODE_EN_START_BIT	(13)
+-#define AW88399_CRC_CODE_EN_BITS_LEN	(1)
+-#define AW88399_CRC_CODE_EN_MASK	\
+-	(~(((1<<AW88399_CRC_CODE_EN_BITS_LEN)-1) << AW88399_CRC_CODE_EN_START_BIT))
+-
+-#define AW88399_CRC_CODE_EN_DISABLE	(0)
+-#define AW88399_CRC_CODE_EN_DISABLE_VALUE	\
+-	(AW88399_CRC_CODE_EN_DISABLE << AW88399_CRC_CODE_EN_START_BIT)
+-
+-#define AW88399_CRC_CODE_EN_ENABLE	(1)
+-#define AW88399_CRC_CODE_EN_ENABLE_VALUE	\
+-	(AW88399_CRC_CODE_EN_ENABLE << AW88399_CRC_CODE_EN_START_BIT)
+-
+-#define AW88399_CRC_CFG_EN_START_BIT	(12)
+-#define AW88399_CRC_CFG_EN_BITS_LEN	(1)
+-#define AW88399_CRC_CFG_EN_MASK		\
+-	(~(((1<<AW88399_CRC_CFG_EN_BITS_LEN)-1) << AW88399_CRC_CFG_EN_START_BIT))
+-
+-#define AW88399_CRC_CFG_EN_DISABLE	(0)
+-#define AW88399_CRC_CFG_EN_DISABLE_VALUE	\
+-	(AW88399_CRC_CFG_EN_DISABLE << AW88399_CRC_CFG_EN_START_BIT)
+-
+-#define AW88399_CRC_CFG_EN_ENABLE	(1)
+-#define AW88399_CRC_CFG_EN_ENABLE_VALUE	\
+-	(AW88399_CRC_CFG_EN_ENABLE << AW88399_CRC_CFG_EN_START_BIT)
+-
+-#define AW88399_OCDS_START_BIT		(3)
+-#define AW88399_OCDS_OC		(1)
+-#define AW88399_OCDS_OC_VALUE		\
+-	(AW88399_OCDS_OC << AW88399_OCDS_START_BIT)
+-
+-#define AW88399_NOCLKS_START_BIT	(5)
+-#define AW88399_NOCLKS_NO_CLOCK	(1)
+-#define AW88399_NOCLKS_NO_CLOCK_VALUE	\
+-	(AW88399_NOCLKS_NO_CLOCK << AW88399_NOCLKS_START_BIT)
+-
+-#define AW88399_SWS_START_BIT		(8)
+-#define AW88399_SWS_SWITCHING		(1)
+-#define AW88399_SWS_SWITCHING_VALUE	\
+-	(AW88399_SWS_SWITCHING << AW88399_SWS_START_BIT)
+-
+-#define AW88399_BSTS_START_BIT		(9)
+-#define AW88399_BSTS_FINISHED		(1)
+-#define AW88399_BSTS_FINISHED_VALUE	\
+-	(AW88399_BSTS_FINISHED << AW88399_BSTS_START_BIT)
+-
+-#define AW88399_UVLS_START_BIT		(14)
+-#define AW88399_UVLS_NORMAL		(0)
+-#define AW88399_UVLS_NORMAL_VALUE	\
+-	(AW88399_UVLS_NORMAL << AW88399_UVLS_START_BIT)
+-
+-#define AW88399_BSTOCS_START_BIT	(11)
+-#define AW88399_BSTOCS_OVER_CURRENT	(1)
+-#define AW88399_BSTOCS_OVER_CURRENT_VALUE	\
+-	(AW88399_BSTOCS_OVER_CURRENT << AW88399_BSTOCS_START_BIT)
+-
+-#define AW88399_OTHS_START_BIT		(1)
+-#define AW88399_OTHS_OT		(1)
+-#define AW88399_OTHS_OT_VALUE		\
+-	(AW88399_OTHS_OT << AW88399_OTHS_START_BIT)
+-
+-#define AW88399_PLLS_START_BIT		(0)
+-#define AW88399_PLLS_LOCKED		(1)
+-#define AW88399_PLLS_LOCKED_VALUE	\
+-	(AW88399_PLLS_LOCKED << AW88399_PLLS_START_BIT)
+-
+-#define AW88399_CLKS_START_BIT		(4)
+-#define AW88399_CLKS_STABLE		(1)
+-#define AW88399_CLKS_STABLE_VALUE	\
+-	(AW88399_CLKS_STABLE << AW88399_CLKS_START_BIT)
+-
+-#define AW88399_BIT_PLL_CHECK \
+-		(AW88399_CLKS_STABLE_VALUE | \
+-		AW88399_PLLS_LOCKED_VALUE)
+-
+-#define AW88399_BIT_SYSST_CHECK_MASK \
+-		(~(AW88399_UVLS_NORMAL_VALUE | \
+-		AW88399_BSTOCS_OVER_CURRENT_VALUE | \
+-		AW88399_BSTS_FINISHED_VALUE | \
+-		AW88399_SWS_SWITCHING_VALUE | \
+-		AW88399_NOCLKS_NO_CLOCK_VALUE | \
+-		AW88399_CLKS_STABLE_VALUE | \
+-		AW88399_OCDS_OC_VALUE | \
+-		AW88399_OTHS_OT_VALUE | \
+-		AW88399_PLLS_LOCKED_VALUE))
+-
+-#define AW88399_BIT_SYSST_NOSWS_CHECK \
+-		(AW88399_BSTS_FINISHED_VALUE | \
+-		AW88399_CLKS_STABLE_VALUE | \
+-		AW88399_PLLS_LOCKED_VALUE)
+-
+-#define AW88399_BIT_SYSST_SWS_CHECK \
+-		(AW88399_BSTS_FINISHED_VALUE | \
+-		AW88399_CLKS_STABLE_VALUE | \
+-		AW88399_PLLS_LOCKED_VALUE | \
+-		AW88399_SWS_SWITCHING_VALUE)
+-
+-#define AW88399_CCO_MUX_START_BIT	(14)
+-#define AW88399_CCO_MUX_BITS_LEN	(1)
+-#define AW88399_CCO_MUX_MASK		\
+-	(~(((1<<AW88399_CCO_MUX_BITS_LEN)-1) << AW88399_CCO_MUX_START_BIT))
+-
+-#define AW88399_CCO_MUX_DIVIDED	(0)
+-#define AW88399_CCO_MUX_DIVIDED_VALUE	\
+-	(AW88399_CCO_MUX_DIVIDED << AW88399_CCO_MUX_START_BIT)
+-
+-#define AW88399_CCO_MUX_BYPASS		(1)
+-#define AW88399_CCO_MUX_BYPASS_VALUE	\
+-	(AW88399_CCO_MUX_BYPASS << AW88399_CCO_MUX_START_BIT)
+-
+-#define AW88399_NOISE_GATE_EN_START_BIT	(13)
+-#define AW88399_NOISE_GATE_EN_BITS_LEN		(1)
+-#define AW88399_NOISE_GATE_EN_MASK	\
+-	(~(((1<<AW88399_NOISE_GATE_EN_BITS_LEN)-1) << AW88399_NOISE_GATE_EN_START_BIT))
+-
+-#define AW88399_WDT_CNT_START_BIT	(0)
+-#define AW88399_WDT_CNT_BITS_LEN	(8)
+-#define AW88399_WDT_CNT_MASK		\
+-	(~(((1<<AW88399_WDT_CNT_BITS_LEN)-1) << AW88399_WDT_CNT_START_BIT))
+-
+-#define AW88399_REABS_START_BIT	(3)
+-#define AW88399_REABS_BITS_LEN		(1)
+-#define AW88399_REABS_MASK		\
+-	(~(((1<<AW88399_REABS_BITS_LEN)-1) << AW88399_REABS_START_BIT))
+-
+-#define AW88399_DSP_VOL_START_BIT	(8)
+-#define AW88399_DSP_VOL_BITS_LEN	(8)
+-#define AW88399_DSP_VOL_MASK		\
+-	(~(((1<<AW88399_DSP_VOL_BITS_LEN)-1) << AW88399_DSP_VOL_START_BIT))
+-
+-#define AW883XX_DSP_NG_EN_START	(13)
+-#define AW883XX_DSP_NG_EN_LEN		(1)
+-#define AW883XX_DSP_NG_EN_MASK		\
+-	(~(((1 << AW883XX_DSP_NG_EN_LEN) - 1) << AW883XX_DSP_NG_EN_START))
+-#define AW883XX_DSP_NG_EN_DISABLE	(0)
+-#define AW883XX_DSP_NG_EN_DISABLE_VALUE	\
+-	(AW883XX_DSP_NG_EN_DISABLE << AW883XX_DSP_NG_EN_START)
+-
+-#define AW88399_VOLUME_STEP_DB			(64)
+-#define AW88399_VOL_DEFAULT_VALUE		(0)
+-#define AW88399_DSP_ODD_NUM_BIT_TEST		(0x5555)
+-#define AW88399_EF_ISN_GESLP_SIGN_MASK		(~(1 << 9))
+-#define AW88399_EF_ISN_GESLP_SIGN_NEG		(0xfe00)
+-
+-#define AW88399_EF_VSN_GESLP_SIGN_MASK		(~(1 << 9))
+-#define AW88399_EF_VSN_GESLP_SIGN_NEG		(0xfe00)
+-
+-#define AW88399_TEM4_SIGN_MASK			(~(1 << 5))
+-#define AW88399_TEM4_SIGN_NEG			(0xffc0)
+-
+-#define AW88399_ICABLK_FACTOR			(1)
+-#define AW88399_VCABLK_FACTOR			(1)
+-#define AW88399_VCABLK_DAC_FACTOR		(2)
+-
+-#define AW88399_VCALB_ADJ_FACTOR		(12)
+-#define AW88399_VCALB_ACCURACY			(1 << 12)
+-
+-#define AW88399_ISCAL_FACTOR			(3125)
+-#define AW88399_VSCAL_FACTOR			(18875)
+-#define AW88399_ISCAL_DAC_FACTOR		(3125)
+-#define AW88399_VSCAL_DAC_FACTOR		(12600)
+-#define AW88399_CABL_BASE_VALUE		(1000)
+-
+-#define AW88399_DEV_DEFAULT_CH			(0)
+-#define AW88399_DEV_DSP_CHECK_MAX		(5)
+-#define AW88399_MAX_RAM_WRITE_BYTE_SIZE	(128)
+-#define AW88399_DSP_RE_SHIFT			(12)
+-#define AW88399_CALI_RE_MAX			(15000)
+-#define AW88399_CALI_RE_MIN			(4000)
+-#define AW_FW_ADDR_LEN				(4)
+-#define AW88399_DSP_RE_TO_SHOW_RE(re, shift)	(((re) * (1000)) >> (shift))
+-#define AW88399_SHOW_RE_TO_DSP_RE(re, shift)	(((re) << shift) / (1000))
+-#define AW88399_CRC_CHECK_PASS_VAL		(0x4)
+-
+-#define AW88399_CRC_CFG_BASE_ADDR		(0xD80)
+-#define AW88399_CRC_FW_BASE_ADDR		(0x4C0)
+-#define AW88399_ACF_FILE			"aw88399_acf.bin"
+-#define AW88399_DEV_SYSST_CHECK_MAX		(10)
+-#define AW88399_CHIP_ID			0x2183
++#include <sound/aw88399.h>
+ 
+ #define AW88399_I2C_NAME			"aw88399"
+ 
+-#define AW88399_START_RETRIES			(5)
+-#define AW88399_START_WORK_DELAY_MS		(0)
+-
+ #define AW88399_RATES (SNDRV_PCM_RATE_8000_48000 | \
+ 			SNDRV_PCM_RATE_96000)
+ #define AW88399_FORMATS (SNDRV_PCM_FMTBIT_S16_LE | \
+@@ -550,80 +48,4 @@
+ 	.put = profile_set, \
+ }
+ 
+-enum {
+-	AW_EF_AND_CHECK = 0,
+-	AW_EF_OR_CHECK,
+-};
+-
+-enum {
+-	AW88399_DEV_VDSEL_DAC = 0,
+-	AW88399_DEV_VDSEL_VSENSE = 32,
+-};
+-
+-enum {
+-	AW88399_DSP_CRC_NA = 0,
+-	AW88399_DSP_CRC_OK = 1,
+-};
+-
+-enum {
+-	AW88399_DSP_FW_UPDATE_OFF = 0,
+-	AW88399_DSP_FW_UPDATE_ON = 1,
+-};
+-
+-enum {
+-	AW88399_FORCE_UPDATE_OFF = 0,
+-	AW88399_FORCE_UPDATE_ON = 1,
+-};
+-
+-enum {
+-	AW88399_1000_US = 1000,
+-	AW88399_2000_US = 2000,
+-	AW88399_3000_US = 3000,
+-	AW88399_4000_US = 4000,
+-};
+-
+-enum AW88399_DEV_STATUS {
+-	AW88399_DEV_PW_OFF = 0,
+-	AW88399_DEV_PW_ON,
+-};
+-
+-enum AW88399_DEV_FW_STATUS {
+-	AW88399_DEV_FW_FAILED = 0,
+-	AW88399_DEV_FW_OK,
+-};
+-
+-enum AW88399_DEV_MEMCLK {
+-	AW88399_DEV_MEMCLK_OSC = 0,
+-	AW88399_DEV_MEMCLK_PLL = 1,
+-};
+-
+-enum AW88399_DEV_DSP_CFG {
+-	AW88399_DEV_DSP_WORK = 0,
+-	AW88399_DEV_DSP_BYPASS = 1,
+-};
+-
+-enum {
+-	AW88399_NOT_RCV_MODE = 0,
+-	AW88399_RCV_MODE = 1,
+-};
+-
+-enum {
+-	AW88399_SYNC_START = 0,
+-	AW88399_ASYNC_START,
+-};
+-
 -struct aw88399 {
 -	struct aw_device *aw_pa;
 -	struct mutex lock;
@@ -2267,31 +3474,27 @@ diff -rupN linux-6.19.14/sound/soc/codecs/aw88399.h linux-6.19.14_patch_series/s
 -	unsigned int dither_st;
 -};
 -
- #endif
-diff -rupN linux-6.19.14/sound/soc/codecs/aw88399-lib.c linux-6.19.14_patch_series/sound/soc/codecs/aw88399-lib.c
---- linux-6.19.14/sound/soc/codecs/aw88399-lib.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-6.19.14_patch_series/sound/soc/codecs/aw88399-lib.c	2026-04-25 14:28:06.417025304 +0200
-@@ -0,0 +1,1397 @@
+-#endif
++#endif /* __AW88399_H__ */
+diff -rupN linux-7.0.12/sound/soc/codecs/aw88399-lib.c linux-7.0.12_patch_series/sound/soc/codecs/aw88399-lib.c
+--- linux-7.0.12/sound/soc/codecs/aw88399-lib.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-7.0.12_patch_series/sound/soc/codecs/aw88399-lib.c	2026-06-10 14:15:11.361091233 +0100
+@@ -0,0 +1,1395 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * aw88399-lib.c --  AW88399 Common functions for ASoC and HDA audio drivers
-+ *
 + * Copyright (c) 2023 AWINIC Technology CO., LTD
 + *
 + * Author: Weidong Wang <wangweidong.a@awinic.com>
 + */
 +
-+#include <linux/crc32.h>
-+#include <linux/gpio/consumer.h>
 +#include <linux/i2c.h>
 +#include <linux/firmware.h>
 +#include <linux/minmax.h>
 +#include <linux/regmap.h>
-+#include <linux/sort.h>
 +#include <sound/soc.h>
-+#include "aw88399.h"
++#include <sound/aw88399.h>
 +#include "aw88395/aw88395_device.h"
-+#include "aw88399-lib.h"
 +
 +static void aw_dev_pwd(struct aw_device *aw_dev, bool pwd)
 +{
@@ -3452,11 +4655,14 @@ diff -rupN linux-6.19.14/sound/soc/codecs/aw88399-lib.c linux-6.19.14_patch_seri
 +	if (aw88399->aw_pa->status == AW88399_DEV_PW_ON)
 +		return;
 +
-+	ret = aw88399_dev_fw_update(aw88399, AW88399_DSP_FW_UPDATE_OFF, true);
++	ret = aw88399_dev_fw_update(aw88399, aw88399->fw_needs_reload ?
++		AW88399_DSP_FW_UPDATE_ON : AW88399_DSP_FW_UPDATE_OFF, true);
 +	if (ret) {
 +		dev_err(aw88399->aw_pa->dev, "fw update failed.");
 +		return;
 +	}
++
++	aw88399->fw_needs_reload = false;
 +
 +	if (sync_start == AW88399_SYNC_START)
 +		aw88399_start_pa(aw88399);
@@ -3572,10 +4778,10 @@ diff -rupN linux-6.19.14/sound/soc/codecs/aw88399-lib.c linux-6.19.14_patch_seri
 +	}
 +
 +	dev_dbg(aw88399->aw_pa->dev, "loaded %s - size: %zu\n",
-+		AW88399_ACF_FILE, cont ? cont->size : 0);
++			AW88399_ACF_FILE, cont ? cont->size : 0);
 +
 +	aw88399->aw_cfg = devm_kzalloc(aw88399->aw_pa->dev,
-+				       struct_size(aw88399->aw_cfg, data, cont->size), GFP_KERNEL);
++			struct_size(aw88399->aw_cfg, data, cont->size), GFP_KERNEL);
 +	if (!aw88399->aw_cfg) {
 +		release_firmware(cont);
 +		return -ENOMEM;
@@ -3615,8 +4821,8 @@ diff -rupN linux-6.19.14/sound/soc/codecs/aw88399-lib.c linux-6.19.14_patch_seri
 +		 */
 +		aw_dev->channel = aw_dev->i2c->addr - 0x34;
 +		dev_info(aw_dev->dev,
-+			 "DT channel property not found, using I2C address-based channel %d (addr 0x%02x)\n",
-+			 aw_dev->channel, aw_dev->i2c->addr);
++			"DT channel property not found, using I2C address-based channel %d (addr 0x%02x)\n",
++			aw_dev->channel, aw_dev->i2c->addr);
 +		return;
 +	}
 +	aw_dev->channel = channel_value;
@@ -3667,57 +4873,12 @@ diff -rupN linux-6.19.14/sound/soc/codecs/aw88399-lib.c linux-6.19.14_patch_seri
 +}
 +EXPORT_SYMBOL_GPL(aw88399_init);
 +
-+MODULE_DESCRIPTION("AW88399 library");
-+MODULE_LICENSE("GPL v2");
-diff -rupN linux-6.19.14/sound/soc/codecs/aw88399-lib.h linux-6.19.14_patch_series/sound/soc/codecs/aw88399-lib.h
---- linux-6.19.14/sound/soc/codecs/aw88399-lib.h	1970-01-01 01:00:00.000000000 +0100
-+++ linux-6.19.14_patch_series/sound/soc/codecs/aw88399-lib.h	2026-04-25 13:49:14.096811630 +0200
-@@ -0,0 +1,41 @@
-+/* SPDX-License-Identifier: GPL-2.0-only
-+ *
-+ * aw88399-lib.h --  AW88399 Common functions for ASoC and HDA audio drivers
-+ *
-+ * Copyright (c) 2023 AWINIC Technology CO., LTD
-+ *
-+ * Author: Weidong Wang <wangweidong.a@awinic.com>
-+ */
-+
-+#ifndef __AW88399_LIB_H__
-+#define __AW88399_LIB_H__
-+
-+struct aw88399 {
-+	struct aw_device *aw_pa;
-+	struct mutex lock;
-+	struct gpio_desc *reset_gpio;
-+	struct delayed_work start_work;
-+	struct regmap *regmap;
-+	struct aw_container *aw_cfg;
-+
-+	unsigned int check_val;
-+	unsigned int crc_init_val;
-+	unsigned int vcalb_init_val;
-+	unsigned int dither_st;
-+	bool bsts_unreliable;
-+};
-+
-+int aw_dev_check_syspll(struct aw_device *aw_dev);
-+void aw_dev_dsp_enable(struct aw_device *aw_dev, bool is_enable);
-+int aw_dev_get_dsp_status(struct aw_device *aw_dev);
-+int aw_dev_set_volume(struct aw_device *aw_dev, unsigned int value);
-+int aw_dev_update_cali_re(struct aw_cali_desc *cali_desc);
-+int aw88399_dev_get_prof_name(struct aw_device *aw_dev, int index, char **prof_name);
-+void aw88399_dev_mute(struct aw_device *aw_dev, bool is_mute);
-+int aw88399_init(struct aw88399 *aw88399, struct i2c_client *i2c, struct regmap *regmap);
-+int aw88399_request_firmware_file(struct aw88399 *aw88399);
-+void aw88399_start(struct aw88399 *aw88399, bool sync_start);
-+void aw88399_startup_work(struct work_struct *work);
-+int aw88399_stop(struct aw_device *aw_dev);
-+
-+#endif /* __AW88399_LIB_H__ */
-diff -rupN linux-6.19.14/sound/soc/codecs/Kconfig linux-6.19.14_patch_series/sound/soc/codecs/Kconfig
---- linux-6.19.14/sound/soc/codecs/Kconfig	2026-04-22 13:30:53.000000000 +0200
-+++ linux-6.19.14_patch_series/sound/soc/codecs/Kconfig	2026-04-25 13:48:39.379818893 +0200
-@@ -737,6 +737,10 @@ config SND_SOC_AW87390
++MODULE_DESCRIPTION("AW88399 common device library");
++MODULE_LICENSE("GPL");
+diff -rupN linux-7.0.12/sound/soc/codecs/Kconfig linux-7.0.12_patch_series/sound/soc/codecs/Kconfig
+--- linux-7.0.12/sound/soc/codecs/Kconfig	2026-06-09 11:32:51.000000000 +0100
++++ linux-7.0.12_patch_series/sound/soc/codecs/Kconfig	2026-06-10 14:15:11.361697574 +0100
+@@ -732,6 +732,10 @@ config SND_SOC_AW87390
  	  sound quality, which is a new high efficiency, low
  	  noise, constant large volume, 6th Smart K audio amplifier.
  
@@ -3728,7 +4889,7 @@ diff -rupN linux-6.19.14/sound/soc/codecs/Kconfig linux-6.19.14_patch_series/sou
  config SND_SOC_AW88399
  	tristate "Soc Audio for awinic aw88399"
  	depends on I2C
-@@ -744,6 +748,7 @@ config SND_SOC_AW88399
+@@ -739,6 +743,7 @@ config SND_SOC_AW88399
  	select REGMAP_I2C
  	select GPIOLIB
  	select SND_SOC_AW88395_LIB
@@ -3736,10 +4897,10 @@ diff -rupN linux-6.19.14/sound/soc/codecs/Kconfig linux-6.19.14_patch_series/sou
  	help
  	  This option enables support for aw88399 Smart PA.
  	  The awinic AW88399 is an I2S/TDM input, high efficiency
-diff -rupN linux-6.19.14/sound/soc/codecs/Makefile linux-6.19.14_patch_series/sound/soc/codecs/Makefile
---- linux-6.19.14/sound/soc/codecs/Makefile	2026-04-22 13:30:53.000000000 +0200
-+++ linux-6.19.14_patch_series/sound/soc/codecs/Makefile	2026-04-25 13:48:39.381216966 +0200
-@@ -56,6 +56,7 @@ snd-soc-aw88395-y := aw88395/aw88395.o
+diff -rupN linux-7.0.12/sound/soc/codecs/Makefile linux-7.0.12_patch_series/sound/soc/codecs/Makefile
+--- linux-7.0.12/sound/soc/codecs/Makefile	2026-06-09 11:32:51.000000000 +0100
++++ linux-7.0.12_patch_series/sound/soc/codecs/Makefile	2026-06-10 14:15:11.362327971 +0100
+@@ -55,6 +55,7 @@ snd-soc-aw88395-y := aw88395/aw88395.o
  snd-soc-aw88166-y := aw88166.o
  snd-soc-aw88261-y := aw88261.o
  snd-soc-aw88399-y := aw88399.o
@@ -3747,7 +4908,7 @@ diff -rupN linux-6.19.14/sound/soc/codecs/Makefile linux-6.19.14_patch_series/so
  snd-soc-bd28623-y := bd28623.o
  snd-soc-bt-sco-y := bt-sco.o
  snd-soc-chv3-codec-y := chv3-codec.o
-@@ -489,6 +490,7 @@ obj-$(CONFIG_SND_SOC_AW88395)	+=snd-soc-
+@@ -491,6 +492,7 @@ obj-$(CONFIG_SND_SOC_AW88395)	+=snd-soc-
  obj-$(CONFIG_SND_SOC_AW88166)	+=snd-soc-aw88166.o
  obj-$(CONFIG_SND_SOC_AW88261)	+=snd-soc-aw88261.o
  obj-$(CONFIG_SND_SOC_AW88399)	+= snd-soc-aw88399.o
@@ -3755,4 +4916,3 @@ diff -rupN linux-6.19.14/sound/soc/codecs/Makefile linux-6.19.14_patch_series/so
  obj-$(CONFIG_SND_SOC_BD28623)	+= snd-soc-bd28623.o
  obj-$(CONFIG_SND_SOC_BT_SCO)	+= snd-soc-bt-sco.o
  obj-$(CONFIG_SND_SOC_CHV3_CODEC) += snd-soc-chv3-codec.o
- 
