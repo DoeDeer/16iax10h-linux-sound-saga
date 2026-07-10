@@ -127,7 +127,7 @@ DOCKER_RUN_ARGS=(
     --rm
     --privileged
     -v "$OUTPUT_DIR:/output"
-    -v "./fix/patches/16iax10h-audio-linux-7.0.12.patch:/inputs/sound_fix.patch"
+    -v "./fix/patches/16iax10h-audio-linux-7.1.3.patch:/inputs/sound_fix.patch"
     -v "$TMPDIR/entrypoint.sh:/inputs/entrypoint.sh"
 )
 
